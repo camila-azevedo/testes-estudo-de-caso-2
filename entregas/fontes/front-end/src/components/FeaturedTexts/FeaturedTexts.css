@@ -1,0 +1,129 @@
+.featured-texts-section {
+  padding: 100px 30px 0;
+  background: #f8fafc;
+}
+
+.featured-texts__header {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+}
+
+.featured-texts__header h1 {
+  margin: 0;
+  color: #18253d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 2.9rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.featured-texts__header p {
+  max-width: 590px;
+  margin: 12px 0 0;
+  color: #697688;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.featured-texts__header .featured-texts__kicker {
+  margin: 0 0 8px;
+  color: #075a9d;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.featured-text {
+  max-width: 1180px;
+  margin: 0 auto 20px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(20, 39, 72, 0.08);
+}
+
+.featured-text__image-wrap {
+  min-height: 290px;
+}
+
+.featured-text__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 290px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.featured-text__content {
+  padding: 30px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.featured-text__badge {
+  align-self: flex-start;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #e4f0ff;
+  color: #075a9d;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.featured-text h2 {
+  max-width: 350px;
+  margin: 14px 0 12px;
+  color: #18253d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.5rem, 2.4vw, 2.05rem);
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+.featured-text p {
+  max-width: 390px;
+  margin: 0;
+  color: #687384;
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.featured-text__button {
+  align-self: flex-start;
+  margin-top: 20px;
+  padding: 9px 15px;
+  border: 0;
+  border-radius: 999px;
+  background: #075a9d;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.featured-text__button span {
+  margin-left: 4px;
+}
+
+@media (max-width: 650px) {
+  .featured-texts-section {
+    padding: 94px 20px 0;
+  }
+
+  .featured-text {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-text__image-wrap,
+  .featured-text__image {
+    min-height: 210px;
+  }
+
+  .featured-text__content {
+    padding: 24px;
+  }
+}

@@ -1,0 +1,84 @@
+.banner {
+  width: 100%;
+  margin-top: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  margin-top: 70px;
+}
+
+.carouselContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 20px;
+  background: rgba(102, 126, 234, 0.95);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  z-index: 10;
+  height: 300px;
+  width: 600px;
+}
+
+.announcementBanner {
+  flex: 1;
+  max-width: 600px;
+  color: white;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.announcementText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.carouselButton {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.carouselButton:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.carouselButton:active {
+  transform: scale(0.95);
+}
+
+.bannerImage {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  display: block;
+}

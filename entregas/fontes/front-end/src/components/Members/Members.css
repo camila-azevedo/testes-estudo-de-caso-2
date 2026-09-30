@@ -1,0 +1,187 @@
+.membersPage {
+  min-height: calc(100vh - 70px);
+  padding: 118px 24px 72px;
+  background: #f5f6f4;
+  color: #17273d;
+  box-sizing: border-box;
+}
+.membersSection {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 34px 84px 70px;
+  background: #fbfbfa;
+  border: 1px solid #eef0ed;
+  box-sizing: border-box;
+}
+.membersKicker {
+  margin: 0 0 10px;
+  color: #4a79a4;
+  font:
+    600 0.68rem/1.2 Arial,
+    sans-serif;
+  letter-spacing: 0.16em;
+}
+.membersSection h1 {
+  margin: 0;
+  color: #14253b;
+  font:
+    400 clamp(1.45rem, 2.3vw, 1.85rem)/1.2 Georgia,
+    serif;
+}
+.membersIntro {
+  max-width: 470px;
+  margin: 6px 0 28px;
+  color: #74808b;
+  font:
+    0.78rem/1.45 Arial,
+    sans-serif;
+}
+.membersGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+.memberCard {
+  min-width: 0;
+}
+.memberCard img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1.12;
+  object-fit: cover;
+  background: #dfe6e9;
+}
+.memberPhoto {
+  cursor: pointer;
+}
+.memberPhoto:focus-visible {
+  outline: 3px solid #4a79a4;
+  outline-offset: 3px;
+}
+.memberName {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 8px 0 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #1d2b3b;
+  font:
+    600 0.75rem/1.2 Georgia,
+    serif;
+  text-align: left;
+  cursor: pointer;
+}
+.memberName:hover,
+.memberName:focus-visible {
+  color: #12629a;
+  text-decoration: underline;
+  outline: none;
+}
+.memberCard p {
+  margin: 0;
+  color: #7b858d;
+  font:
+    0.64rem/1.4 Arial,
+    sans-serif;
+}
+.memberModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(11, 28, 45, 0.48);
+}
+.memberModal {
+  position: relative;
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 22px;
+  width: min(100%, 470px);
+  padding: 26px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(12, 35, 56, 0.22);
+}
+.memberModal > img {
+  width: 130px;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.modalClose {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #53606c;
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.modalClose:hover,
+.modalClose:focus-visible {
+  background: #edf3f6;
+  outline: none;
+}
+.modalLabel {
+  margin: 0 0 4px;
+  color: #5483a4;
+  font:
+    600 0.65rem/1.2 Arial,
+    sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.memberModal h2 {
+  margin: 0 0 5px;
+  color: #17273d;
+  font:
+    400 1.35rem/1.2 Georgia,
+    serif;
+}
+.modalRole,
+.memberModal div > p:not(.modalLabel) {
+  margin: 0 0 12px;
+  color: #697680;
+  font:
+    0.78rem/1.45 Arial,
+    sans-serif;
+}
+.memberModal strong {
+  color: #273b4c;
+  font-weight: 600;
+}
+.memberModal a {
+  color: #12629a;
+  font:
+    0.75rem Arial,
+    sans-serif;
+}
+@media (max-width: 700px) {
+  .membersPage {
+    padding: 98px 14px 44px;
+  }
+  .membersSection {
+    padding: 26px 18px 42px;
+  }
+  .membersGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 14px;
+  }
+  .memberModal {
+    grid-template-columns: 94px 1fr;
+    gap: 16px;
+    padding: 22px 18px;
+  }
+  .memberModal > img {
+    width: 94px;
+  }
+}
