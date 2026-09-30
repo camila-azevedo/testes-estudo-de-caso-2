@@ -1,84 +1,159 @@
 .banner {
-  width: 100%;
-  margin-top: 0;
-  padding: 0;
-  overflow: hidden;
   position: relative;
+  width: 100%;
   margin-top: 70px;
+  padding: 58px 24px;
+  background: #dceaf1 url("/banner.png") center / cover no-repeat;
+  box-sizing: border-box;
 }
 
 .carouselContainer {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: center;
-  gap: 20px;
-  padding: 15px 20px;
-  background: rgba(102, 126, 234, 0.95);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  z-index: 10;
-  height: 300px;
-  width: 600px;
+  gap: 42px;
+  width: min(100%, 1080px);
+  min-height: 290px;
+  margin: 0 auto;
+  padding: 28px 38px;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(14, 42, 63, 0.12);
+  box-sizing: border-box;
 }
 
 .announcementBanner {
-  flex: 1;
-  max-width: 600px;
-  color: white;
-  text-align: center;
-  font-weight: 600;
-  font-size: 16px;
-  min-height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width: 0;
+  color: #17273d;
+}
+
+.bannerEyebrow {
+  margin: 0 0 14px;
+  color: #287c86;
+  font:
+    600 0.72rem/1.2 Arial,
+    sans-serif;
+  letter-spacing: 0.12em;
+}
+
+.announcementTitle {
+  max-width: 680px;
+  margin: 0;
+  color: #17273d;
+  font:
+    400 2.45rem/1.12 Georgia,
+    serif;
 }
 
 .announcementText {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  animation: fadeIn 0.5s ease-in-out;
+  max-width: 600px;
+  margin: 18px 0 26px;
+  color: #687681;
+  font:
+    0.95rem/1.65 Arial,
+    sans-serif;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.carouselControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bannerMedia {
+  min-width: 0;
+  height: 250px;
+  background: #e8f0f3;
 }
 
 .carouselButton {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid white;
-  padding: 8px 12px;
-  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #d9e1e3;
+  border-radius: 50%;
+  background: #fff;
+  color: #1d5664;
+  font-size: 1.1rem;
   cursor: pointer;
-  font-size: 18px;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
 
-.carouselButton:hover {
-  background-color: rgba(255, 255, 255, 0.4);
-  transform: scale(1.1);
+.carouselButton:hover,
+.carouselButton:focus-visible {
+  border-color: #1d6472;
+  background: #edf5f5;
+  outline: none;
 }
 
-.carouselButton:active {
-  transform: scale(0.95);
+.carouselIndicators {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.bannerImage {
-  width: 100%;
-  height: 500px;
-  object-fit: cover;
-  display: block;
+.carouselIndicator {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #cbd5d7;
+  cursor: pointer;
+}
+
+.carouselIndicator.isActive {
+  background: #287c86;
+  box-shadow: 0 0 0 3px #e4f0f0;
+}
+
+.carouselIndicator:focus-visible {
+  outline: 2px solid #287c86;
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .banner {
+    padding: 36px 18px;
+  }
+
+  .carouselContainer {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    padding: 26px;
+  }
+
+  .bannerMedia {
+    height: 210px;
+  }
+
+  .announcementTitle {
+    max-width: 560px;
+    font-size: 2rem;
+  }
+
+  .announcementText {
+    margin: 14px 0 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .banner {
+    padding: 26px 12px;
+  }
+
+  .carouselContainer {
+    padding: 22px 18px;
+  }
+
+  .announcementTitle {
+    font-size: 1.7rem;
+  }
+  .bannerMedia {
+    height: 175px;
+  }
 }

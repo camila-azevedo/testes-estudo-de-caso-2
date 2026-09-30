@@ -87,6 +87,124 @@
     0.64rem/1.4 Arial,
     sans-serif;
 }
+.memberManagement {
+  width: min(100%, 1080px);
+  margin: 30px auto 0;
+  padding: 0 84px 30px;
+  box-sizing: border-box;
+}
+.memberManagementHeader,
+.memberFormActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.memberCardStatus {
+  margin-top: 4px !important;
+  color: #8a5b34 !important;
+  font-weight: 600 !important;
+}
+.memberManagementHeader h2,
+.memberFormModal h2 {
+  margin: 0;
+  color: #17273d;
+  font:
+    400 1.25rem/1.2 Georgia,
+    serif;
+}
+.memberActionButton,
+.memberEditorRow button,
+.memberFormActions button {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #1675c9;
+  border-radius: 6px;
+  background: #1675c9;
+  color: #fff;
+  font:
+    600 0.75rem Arial,
+    sans-serif;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.memberActionButton:hover,
+.memberFormActions button:hover {
+  background: #0f63ad;
+  box-shadow: 0 3px 9px rgba(22, 117, 201, 0.22);
+  transform: translateY(-1px);
+}
+.memberActionButton:focus-visible,
+.memberFormActions button:focus-visible {
+  outline: 3px solid rgba(22, 117, 201, 0.35);
+  outline-offset: 2px;
+}
+.memberFormActions button[type="button"] {
+  background: transparent;
+  color: #1e5966;
+}
+.memberFormActions button[type="button"]:hover {
+  background: #e7eff0;
+}
+.memberFormModal {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: min(90vh, 760px);
+  overflow: auto;
+  padding: 30px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(12, 35, 56, 0.22);
+}
+.memberFormModal form {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+.memberFormModal form > label:not(.memberActiveToggle) {
+  display: grid;
+  gap: 6px;
+  color: #44535f;
+  font:
+    600 0.72rem Arial,
+    sans-serif;
+}
+.memberFormModal input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #cbd4d5;
+  border-radius: 2px;
+  color: #17273d;
+  font:
+    0.82rem Arial,
+    sans-serif;
+  box-sizing: border-box;
+}
+.memberFormModal input:focus-visible {
+  outline: 2px solid #4a8790;
+  outline-offset: 1px;
+}
+.memberActiveToggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #273b4c;
+  font:
+    600 0.78rem Arial,
+    sans-serif;
+}
+.memberActiveToggle input {
+  width: 17px;
+  height: 17px;
+  accent-color: #1e5966;
+}
+.memberFormActions {
+  justify-content: flex-end;
+  margin-top: 6px;
+}
 .memberModalBackdrop {
   position: fixed;
   inset: 0;
@@ -125,6 +243,27 @@
   font-size: 1.55rem;
   line-height: 1;
   cursor: pointer;
+}
+.memberEditAction {
+  position: absolute;
+  top: 8px;
+  right: 46px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #53606c;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.memberEditAction:hover,
+.memberEditAction:focus-visible {
+  background: #edf3f6;
+  outline: none;
 }
 .modalClose:hover,
 .modalClose:focus-visible {
@@ -171,6 +310,16 @@
   }
   .membersSection {
     padding: 26px 18px 42px;
+  }
+  .memberManagement {
+    padding: 0 18px 20px;
+  }
+  .memberManagementHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .memberFormModal {
+    padding: 26px 20px;
   }
   .membersGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
