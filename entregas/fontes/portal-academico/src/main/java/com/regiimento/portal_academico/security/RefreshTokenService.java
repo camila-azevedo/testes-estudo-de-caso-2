@@ -5,9 +5,12 @@ import com.regiimento.portal_academico.model.Usuario;
 import com.regiimento.portal_academico.repository.RefreshTokenRepository;
 import com.regiimento.portal_academico.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
@@ -30,6 +33,14 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UsuarioRepository usuarioRepository;
     private final SecureRandom secureRandom = new SecureRandom();
+
+    // Self-injeção com @Lazy: é assim que se chama "a si mesmo" passando pelo
+    // proxy do Spring. Sem isso, @Transactional(REQUIRES_NEW) chamado de dentro
+    // da própria classe é ignorado silenciosamente (chamada interna não passa
+    // pelo proxy AOP) e a revogação continua dentro da transação que dá rollback.
+    @Autowired
+    @Lazy
+    private RefreshTokenService self;
 
     @Value("${app.jwt.refresh-expiracao-dias:30}")
     private long expiracaoDias;
@@ -64,8 +75,11 @@ public class RefreshTokenService {
 
         if (Boolean.TRUE.equals(entidade.getRevogado())) {
             // Reuso de um token já rotacionado: sinal forte de token roubado.
-            // Por precaução, revoga todos os tokens desse usuário.
-            revogarTodosDoUsuario(entidade.getUsuario().getId());
+            // Chamada via "self" (proxy) + REQUIRES_NEW: isso commita numa
+            // transação própria, independente do que acontecer depois aqui.
+            // Mesmo quando o AccessDeniedException abaixo desfizer a transação
+            // atual, a revogação já está gravada no banco.
+            self.revogarTodosDoUsuario(entidade.getUsuario().getId());
             throw new AccessDeniedException("Refresh token já utilizado — sessões revogadas por segurança");
         }
 
@@ -94,7 +108,14 @@ public class RefreshTokenService {
                 });
     }
 
-    @Transactional
+    /**
+     * REQUIRES_NEW: roda numa transação própria, que commita (ou dá rollback)
+     * sozinha, sem depender de como a transação que chamou este método termina.
+     * Só funciona porque é chamado via "self" acima — chamar diretamente
+     * (this.revogarTodosDoUsuario(...) implícito) faria essa anotação ser
+     * ignorada.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void revogarTodosDoUsuario(Long usuarioId) {
         refreshTokenRepository.findByUsuarioIdAndRevogadoFalse(usuarioId)
                 .forEach(t -> t.setRevogado(true));

@@ -1,5 +1,6 @@
 package com.regiimento.portal_academico.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,7 +8,9 @@ import lombok.Setter;
 @Setter
 public class PromoverIntegranteRequest {
 
+    @NotBlank(message = "vinculoInstitucional é obrigatório")
     private String vinculoInstitucional;
+
     private String linhaPesquisa;
     private String lattes;
     private String titulacao;
