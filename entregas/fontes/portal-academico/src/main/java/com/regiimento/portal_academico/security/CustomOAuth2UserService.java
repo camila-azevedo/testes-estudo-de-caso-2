@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UsuarioRepository usuarioRepository;
+    private final AuthenticatedUserResolver authenticatedUserResolver;
 
     @Override
     @Transactional
@@ -62,6 +63,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         usuario.setAutenticacaoProvedor(provedor);
         usuario = usuarioRepository.save(usuario);
 
-        return new OAuth2UsuarioPrincipal(AuthenticatedUser.de(usuario), oauth2User.getAttributes());
+        return new OAuth2UsuarioPrincipal(authenticatedUserResolver.resolver(usuario), oauth2User.getAttributes());
     }
 }

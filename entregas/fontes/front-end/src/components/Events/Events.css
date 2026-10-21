@@ -167,6 +167,7 @@
 }
 
 .event-card__link {
+  text-decoration: none;
   align-self: flex-start;
   margin-top: 20px;
   padding: 0;

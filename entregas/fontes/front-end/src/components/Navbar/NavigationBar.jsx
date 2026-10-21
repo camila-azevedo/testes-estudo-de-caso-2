@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import styles from "./Navbar.module.css";
+import { useAuth } from "../../auth";
 
 const NavigationBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const { user, login, logout } = useAuth();
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -95,13 +97,24 @@ const NavigationBar = () => {
           </li>
         </ul>
         <div className={styles.navButtons}>
-          <button
-            type="button"
-            className={styles.loginBtn}
-            onClick={() => setIsLoginOpen(true)}
-          >
-            Área do Interessado
-          </button>
+          {user ? (
+            <button
+              type="button"
+              className={styles.loginBtn}
+              title={user.email}
+              onClick={logout}
+            >
+              Sair
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.loginBtn}
+              onClick={() => setIsLoginOpen(true)}
+            >
+              Área do Interessado
+            </button>
+          )}
         </div>
       </div>
 
@@ -128,7 +141,7 @@ const NavigationBar = () => {
               ×
             </button>
             <h2 id="login-modal-title">Área do Interessado</h2>
-            <button type="button" className={styles.googleLoginBtn}>
+            <button type="button" className={styles.googleLoginBtn} onClick={login}>
               <span aria-hidden="true">G</span>
               Fazer login com Google
             </button>

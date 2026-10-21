@@ -4,6 +4,12 @@ package com.regiimento.portal_academico.security;
  * Representa o usuário autenticado na requisição atual.
  * É este objeto — nunca um ID vindo do corpo da requisição — que deve ser usado
  * para saber "quem" está criando um Post, Evento ou Comentario.
+ *
+ * Quem decide se alguém é INTEGRANTE/admin é o AuthenticatedUserResolver,
+ * consultando a tabela integrante_regimento diretamente — não existe mais um
+ * factory method aqui baseado em "instanceof", porque essa checagem via
+ * polimorfismo do Hibernate (herança JOINED sem coluna discriminadora) se
+ * mostrou não confiável em alguns ambientes.
  */
 public record AuthenticatedUser(
         Long id,
@@ -18,18 +24,5 @@ public record AuthenticatedUser(
 
     public boolean isIntegrante() {
         return tipo == TipoUsuario.INTEGRANTE;
-    }
-
-    public static AuthenticatedUser de(com.regiimento.portal_academico.model.Usuario usuario) {
-        boolean ehIntegrante = usuario instanceof com.regiimento.portal_academico.model.IntegranteRegimento;
-        boolean administrador = ehIntegrante
-                && Boolean.TRUE.equals(((com.regiimento.portal_academico.model.IntegranteRegimento) usuario).getAdministrador());
-
-        return new AuthenticatedUser(
-                usuario.getId(),
-                usuario.getEmail(),
-                ehIntegrante ? TipoUsuario.INTEGRANTE : TipoUsuario.INTERESSADO,
-                administrador
-        );
     }
 }

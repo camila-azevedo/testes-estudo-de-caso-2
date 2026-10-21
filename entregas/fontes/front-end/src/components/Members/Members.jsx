@@ -1,101 +1,19 @@
 import { useEffect, useState } from "react";
+import { del, get, post, put } from "../../api";
+import { useAuth } from "../../auth";
+import { mapIntegrante } from "../../mappers";
+import { useApiList } from "../../useApi";
 import "./Members.css";
 
-const initialMembers = [
-  {
-    name: "Ana Beatriz Ferreira",
-    role: "Pesquisadora da Faculdade de Direito UnB",
-    area: "Direito, informação e sociedade",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-    email: "ana.ferreira@regiimento.com",
-  },
-  {
-    name: "Carlos Lima",
-    role: "Mestrando em Ciência Política",
-    area: "Políticas públicas e participação",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-    email: "carlos.lima@regiimento.com",
-  },
-  {
-    name: "João Amauri",
-    role: "Doutor em Psicologia",
-    area: "Comportamento e processos sociais",
-    image: "https://randomuser.me/api/portraits/men/52.jpg",
-    email: "joao.amauri@regiimento.com",
-  },
-  {
-    name: "Rafael Souza",
-    role: "Analista",
-    area: "Gestão e análise de dados",
-    image: "https://randomuser.me/api/portraits/men/75.jpg",
-    email: "rafael.souza@regiimento.com",
-  },
-  {
-    name: "Juliana Pires",
-    role: "Pesquisadora",
-    area: "Memória, cultura e informação",
-    image: "https://randomuser.me/api/portraits/women/68.jpg",
-    email: "juliana.pires@regiimento.com",
-  },
-  {
-    name: "Bruno Mendes",
-    role: "Coordenador",
-    area: "Coordenação de projetos de pesquisa",
-    image: "https://randomuser.me/api/portraits/men/46.jpg",
-    email: "bruno.mendes@regiimento.com",
-  },
-  {
-    name: "Patrícia Silva",
-    role: "Pesquisadora",
-    area: "Comunicação e estudos organizacionais",
-    image: "https://randomuser.me/api/portraits/women/49.jpg",
-    email: "patricia.silva@regiimento.com",
-  },
-  {
-    name: "Gurdeep Shyam",
-    role: "Pesquisador Doutor",
-    area: "Tecnologia, informação e sociedade",
-    image: "https://randomuser.me/api/portraits/men/29.jpg",
-    email: "gurdeep.shyam@regiimento.com",
-  },
-  {
-    name: "Fernanda Rocha",
-    role: "Pesquisadora",
-    area: "Design da informação",
-    image: "https://randomuser.me/api/portraits/women/65.jpg",
-    email: "fernanda.rocha@regiimento.com",
-  },
-  {
-    name: "Eduardo Barros",
-    role: "Coordenador",
-    area: "Ciência de dados e visualização",
-    image: "https://randomuser.me/api/portraits/men/64.jpg",
-    email: "eduardo.barros@regiimento.com",
-  },
-  {
-    name: "Beatriz Costa",
-    role: "Pesquisadora",
-    area: "Educação e acesso à informação",
-    image: "https://randomuser.me/api/portraits/women/33.jpg",
-    email: "beatriz.costa@regiimento.com",
-  },
-  {
-    name: "João Pedro",
-    role: "Analista",
-    area: "Pesquisa e desenvolvimento",
-    image: "https://randomuser.me/api/portraits/men/11.jpg",
-    email: "joao.pedro@regiimento.com",
-  },
-];
-
 export default function Members() {
-  const [members, setMembers] = useState(() =>
-    initialMembers.map((member, index) => ({
-      ...member,
-      id: `member-${index + 1}`,
-      active: true,
-    })),
+  const { user } = useAuth();
+  const isAdmin = Boolean(user?.administrador);
+  const { items: members, loading, error, reload } = useApiList(
+    "/integrantes",
+    mapIntegrante,
   );
+  const [interessados, setInteressados] = useState([]);
+  const [formError, setFormError] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
   const [memberForm, setMemberForm] = useState(null);
 
@@ -115,39 +33,77 @@ export default function Members() {
     };
   }, [selectedMember, memberForm]);
 
-  const openAddForm = () => {
+  const openAddForm = async () => {
     setSelectedMember(null);
+    setFormError("");
     setMemberForm({
+      interessadoId: "",
       name: "",
       role: "",
       area: "",
+      vinculo: "",
       image: "",
       email: "",
       lattes: "",
-      active: true,
     });
+    try {
+      // Quem já entrou com o Google e ainda não é integrante.
+      const todos = await get("/usuarios-interessados");
+      setInteressados(todos);
+    } catch {
+      setInteressados([]);
+    }
   };
 
   const openEditForm = (member) => {
     setSelectedMember(null);
+    setFormError("");
     setMemberForm({ ...member });
   };
 
-  const saveMember = (event) => {
+  const saveMember = async (event) => {
     event.preventDefault();
-    if (memberForm.id) {
-      setMembers((currentMembers) =>
-        currentMembers.map((member) =>
-          member.id === memberForm.id ? memberForm : member,
-        ),
-      );
-    } else {
-      setMembers((currentMembers) => [
-        ...currentMembers,
-        { ...memberForm, id: crypto.randomUUID() },
-      ]);
+    setFormError("");
+    try {
+      if (memberForm.id) {
+        // O back-end exige estes campos no PUT, mas só atualiza nome, imagem,
+        // vínculo, linha de pesquisa, Lattes e titulação.
+        await put(`/integrantes/${memberForm.id}`, {
+          email: memberForm.email,
+          nome: memberForm.name,
+          imagem: memberForm.image,
+          idProvedorExterno: "-",
+          autenticacaoProvedor: "-",
+          vinculoInstitucional: memberForm.vinculo,
+          linhaPesquisa: memberForm.area,
+          lattes: memberForm.lattes,
+          titulacao: memberForm.role,
+        });
+      } else {
+        await post(`/integrantes/${memberForm.interessadoId}/promover`, {
+          vinculoInstitucional: memberForm.vinculo,
+          linhaPesquisa: memberForm.area,
+          lattes: memberForm.lattes,
+          titulacao: memberForm.role,
+          administrador: false,
+        });
+      }
+      setMemberForm(null);
+      reload();
+    } catch {
+      setFormError("Não foi possível salvar o membro.");
     }
-    setMemberForm(null);
+  };
+
+  const removeMember = async () => {
+    if (!window.confirm(`Remover ${memberForm.name}?`)) return;
+    try {
+      await del(`/integrantes/${memberForm.id}`);
+      setMemberForm(null);
+      reload();
+    } catch {
+      setFormError("Não foi possível remover o membro.");
+    }
   };
 
   return (
@@ -159,11 +115,15 @@ export default function Members() {
           Membros do grupo de pesquisa REGIIMENTO, com suas respectivas áreas de
           atuação.
         </p>
+        {loading && <p className="membersIntro">Carregando...</p>}
+        {error && (
+          <p className="membersIntro">Não foi possível carregar os membros.</p>
+        )}
         <div className="membersGrid">
           {members.map((member) => (
             <article className="memberCard" key={member.id}>
               <img
-                src={member.image}
+                src={member.image || "/regiimento.png"}
                 alt={`Retrato de ${member.name}`}
                 className="memberPhoto"
                 role="button"
@@ -190,6 +150,7 @@ export default function Members() {
         </div>
       </section>
 
+      {isAdmin && (
       <section
         className="memberManagement"
         aria-labelledby="member-management-title"
@@ -208,6 +169,7 @@ export default function Members() {
           </button>
         </div>
       </section>
+      )}
 
       {selectedMember && (
         <div
@@ -223,6 +185,7 @@ export default function Members() {
             aria-modal="true"
             aria-labelledby="member-modal-title"
           >
+            {isAdmin && (
             <button
               type="button"
               className="memberEditAction"
@@ -232,6 +195,7 @@ export default function Members() {
             >
               ✎
             </button>
+            )}
             <button
               type="button"
               className="modalClose"
@@ -241,7 +205,7 @@ export default function Members() {
               ×
             </button>
             <img
-              src={selectedMember.image}
+              src={selectedMember.image || "/regiimento.png"}
               alt={`Retrato de ${selectedMember.name}`}
             />
             <div>
@@ -299,6 +263,7 @@ export default function Members() {
               {memberForm.id ? "Editar membro" : "Adicionar membro"}
             </h2>
             <form onSubmit={saveMember}>
+              {memberForm.id ? (
               <label>
                 Nome
                 <input
@@ -307,6 +272,38 @@ export default function Members() {
                   value={memberForm.name}
                   onChange={(event) =>
                     setMemberForm({ ...memberForm, name: event.target.value })
+                  }
+                />
+              </label>
+              ) : (
+              <label>
+                Usuário (já fez login com o Google)
+                <select
+                  required
+                  value={memberForm.interessadoId}
+                  onChange={(event) =>
+                    setMemberForm({
+                      ...memberForm,
+                      interessadoId: event.target.value,
+                    })
+                  }
+                >
+                  <option value="">Selecione...</option>
+                  {interessados.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.nome} ({u.email})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              )}
+              <label>
+                Vínculo institucional
+                <input
+                  required
+                  value={memberForm.vinculo}
+                  onChange={(event) =>
+                    setMemberForm({ ...memberForm, vinculo: event.target.value })
                   }
                 />
               </label>
@@ -330,16 +327,7 @@ export default function Members() {
                   }
                 />
               </label>
-              <label>
-                E-mail
-                <input
-                  type="email"
-                  value={memberForm.email}
-                  onChange={(event) =>
-                    setMemberForm({ ...memberForm, email: event.target.value })
-                  }
-                />
-              </label>
+              {memberForm.id && (
               <label>
                 URL da foto
                 <input
@@ -350,6 +338,7 @@ export default function Members() {
                   }
                 />
               </label>
+              )}
               <label>
                 Link do currículo Lattes
                 <input
@@ -360,20 +349,13 @@ export default function Members() {
                   }
                 />
               </label>
-              <label className="memberActiveToggle">
-                <input
-                  type="checkbox"
-                  checked={memberForm.active}
-                  onChange={(event) =>
-                    setMemberForm({
-                      ...memberForm,
-                      active: event.target.checked,
-                    })
-                  }
-                />
-                Ativo
-              </label>
+              {formError && <p role="alert">{formError}</p>}
               <div className="memberFormActions">
+                {memberForm.id && (
+                  <button type="button" onClick={removeMember}>
+                    Remover
+                  </button>
+                )}
                 <button type="button" onClick={() => setMemberForm(null)}>
                   Cancelar
                 </button>

@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 import NavigationBar from "./components/Navbar/NavigationBar";
 import Banner from "./components/Banner/Banner";
 import AboutUs from "./components/AboutUs/AboutUs";
-import Calendar from "./components/Calendar/calendar";
+import Calendar from "./components/Calendar/Calendar";
 import Footer from "./components/Footer/Footer";
 import Events from "./components/Events/Events";
 import FeaturedEvents from "./components/FeaturedEvents/FeaturedEvents";
 import Texts from "./components/Texts/Texts";
 import FeaturedTexts from "./components/FeaturedTexts/FeaturedTexts";
 import Members from "./components/Members/Members";
-import { events } from "./components/Events/Events";
+import { useApiList } from "./useApi";
+import { mapEvento, mapPost } from "./mappers";
+import { refresh } from "./api";
 
 function HomePage() {
   return (
@@ -24,13 +26,14 @@ function HomePage() {
 }
 
 function EventsPage() {
+  const { items: events, error } = useApiList("/eventos", mapEvento);
   const [favoriteIds, setFavoriteIds] = useState(() => {
     try {
       const savedFavorites = JSON.parse(
         window.localStorage.getItem("favorite-events") || "[]",
       );
       return Array.isArray(savedFavorites)
-        ? savedFavorites.filter((favoriteId) => typeof favoriteId === "string")
+        ? savedFavorites.map(String)
         : [];
     } catch {
       return [];
@@ -41,15 +44,15 @@ function EventsPage() {
     window.localStorage.setItem("favorite-events", JSON.stringify(favoriteIds));
   }, [favoriteIds]);
 
-  const toggleFavorite = (eventTitle) => {
+  const toggleFavorite = (eventId) => {
     setFavoriteIds((currentFavorites) =>
-      currentFavorites.includes(eventTitle)
-        ? currentFavorites.filter((favoriteId) => favoriteId !== eventTitle)
-        : [...currentFavorites, eventTitle],
+      currentFavorites.includes(eventId)
+        ? currentFavorites.filter((favoriteId) => favoriteId !== eventId)
+        : [...currentFavorites, eventId],
     );
   };
   const featuredEvents = events.filter((event) =>
-    favoriteIds.includes(event.title),
+    favoriteIds.includes(event.id),
   );
 
   return (
@@ -57,7 +60,9 @@ function EventsPage() {
       <NavigationBar />
       <main>
         <FeaturedEvents events={featuredEvents} />
+        {error && <p>Não foi possível carregar os eventos.</p>}
         <Events
+          events={events}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
         />
@@ -78,12 +83,14 @@ function MembersPage() {
 }
 
 function TextosParaDiscussaoPage() {
+  const { items: texts, error } = useApiList("/posts", mapPost);
   return (
     <>
       <NavigationBar />
       <main>
-        <FeaturedTexts />
-        <Texts />
+        <FeaturedTexts featuredText={texts[0]} />
+        {error && <p>Não foi possível carregar os textos.</p>}
+        <Texts texts={texts} />
       </main>
       <Footer />
     </>
@@ -99,8 +106,14 @@ function BibliotecaDigitalPage() {
   );
 }
 
-//   );
-// }
+function AuthCallbackPage() {
+  // O back-end redireciona para cá depois do login com o Google. Troca o cookie
+  // de refresh por um access token e volta para a página inicial.
+  useEffect(() => {
+    refresh().then(() => window.location.replace("/"));
+  }, []);
+  return <p>Entrando...</p>;
+}
 
 function App() {
   // referencias internas
@@ -122,7 +135,9 @@ function App() {
 
   let page = <HomePage />;
 
-  if (isEventsPage) {
+  if (currentPath === "/auth/callback") {
+    page = <AuthCallbackPage />;
+  } else if (isEventsPage) {
     page = <EventsPage />;
   } else if (isMembersPage) {
     page = <MembersPage />;
