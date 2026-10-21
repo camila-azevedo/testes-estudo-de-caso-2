@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Events.css";
 
-const events = [
+export const events = [
   {
     date: "18 MAR",
     title: "Encontro de boas-vindas",
@@ -114,7 +114,7 @@ const events = [
 
 const eventsPerPage = 6;
 
-export default function Events() {
+export default function Events({ favoriteIds, onToggleFavorite }) {
   const [currentPage, setCurrentPage] = useState(0);
   const pageCount = Math.ceil(events.length / eventsPerPage);
   const visibleEvents = events.slice(
@@ -137,6 +137,15 @@ export default function Events() {
       <div className="event-cards">
         {visibleEvents.map((event) => (
           <article className="event-card" key={event.title}>
+            <button
+              type="button"
+              className="event-card__favorite"
+              aria-label={`${favoriteIds.includes(event.title) ? "Remover dos" : "Adicionar aos"} favoritos: ${event.title}`}
+              aria-pressed={favoriteIds.includes(event.title)}
+              onClick={() => onToggleFavorite(event.title)}
+            >
+              {favoriteIds.includes(event.title) ? "★" : "☆"}
+            </button>
             <div
               className="event-card__date"
               aria-label={`Data: ${event.date}`}

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import NavigationBar from "./components/Navbar/NavigationBar";
 import Banner from "./components/Banner/Banner";
 import AboutUs from "./components/AboutUs/AboutUs";
@@ -9,6 +9,7 @@ import FeaturedEvents from "./components/FeaturedEvents/FeaturedEvents";
 import Texts from "./components/Texts/Texts";
 import FeaturedTexts from "./components/FeaturedTexts/FeaturedTexts";
 import Members from "./components/Members/Members";
+import { events } from "./components/Events/Events";
 
 function HomePage() {
   return (
@@ -23,12 +24,43 @@ function HomePage() {
 }
 
 function EventsPage() {
+  const [favoriteIds, setFavoriteIds] = useState(() => {
+    try {
+      const savedFavorites = JSON.parse(
+        window.localStorage.getItem("favorite-events") || "[]",
+      );
+      return Array.isArray(savedFavorites)
+        ? savedFavorites.filter((favoriteId) => typeof favoriteId === "string")
+        : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem("favorite-events", JSON.stringify(favoriteIds));
+  }, [favoriteIds]);
+
+  const toggleFavorite = (eventTitle) => {
+    setFavoriteIds((currentFavorites) =>
+      currentFavorites.includes(eventTitle)
+        ? currentFavorites.filter((favoriteId) => favoriteId !== eventTitle)
+        : [...currentFavorites, eventTitle],
+    );
+  };
+  const featuredEvents = events.filter((event) =>
+    favoriteIds.includes(event.title),
+  );
+
   return (
     <>
       <NavigationBar />
       <main>
-        <FeaturedEvents />
-        <Events />
+        <FeaturedEvents events={featuredEvents} />
+        <Events
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
+        />
       </main>
       <Footer />
     </>

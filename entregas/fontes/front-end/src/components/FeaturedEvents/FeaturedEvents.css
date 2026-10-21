@@ -13,27 +13,57 @@
 
 .featured-event__copy {
   max-width: 620px;
+  width: 100%;
 }
 
 .section-kicker--light {
   color: #f2c14e;
 }
 
-.featured-event h2 {
+.featured-event__item h2 {
   max-width: 560px;
-  margin: 14px 0 20px;
+  margin: 0 0 12px;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.6rem, 6vw, 5.5rem);
+  font-size: clamp(2rem, 4vw, 3.2rem);
   font-weight: 400;
-  line-height: 0.98;
+  line-height: 1.08;
 }
 
-.featured-event__copy > p:not(.section-kicker) {
+.featured-event__empty {
   max-width: 470px;
   margin: 0;
   color: #c7d0df;
   font-size: 1rem;
   line-height: 1.65;
+}
+
+.featured-event__item {
+  min-height: 230px;
+}
+
+.featured-event__item-meta {
+  margin: 0 0 8px;
+  color: #f2c14e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.featured-event__item h3 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.55rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.featured-event__item-description {
+  max-width: 470px;
+  margin: 0;
+  color: #c7d0df;
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .featured-event__details {
@@ -56,20 +86,53 @@
   background: #e45d48;
 }
 
-.featured-event__button {
-  margin-top: 30px;
-  padding: 12px 18px;
-  border: 1px solid #ffffff;
-  border-radius: 3px;
-  background: #ffffff;
-  color: #0b1f4d;
-  font-size: 0.85rem;
-  font-weight: 700;
+.featured-event__navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.featured-event__arrow {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  background: transparent;
+  color: #ffffff;
+  font-size: 1rem;
   cursor: pointer;
 }
 
-.featured-event__button span {
-  margin-left: 8px;
+.featured-event__arrow:hover {
+  background: #ffffff;
+  color: #0b1f4d;
+}
+
+.featured-event__indicators {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.featured-event__indicator {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+}
+
+.featured-event__indicator[aria-current="true"] {
+  background: #f2c14e;
+}
+
+.featured-event__arrow:focus-visible,
+.featured-event__indicator:focus-visible {
+  outline: 3px solid #e45d48;
+  outline-offset: 3px;
 }
 
 .featured-event__visual {

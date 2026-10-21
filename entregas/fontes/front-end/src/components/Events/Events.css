@@ -47,6 +47,7 @@
 }
 
 .event-card {
+  position: relative;
   min-height: 360px;
   padding: 24px;
   background: #ffffff;
@@ -58,6 +59,34 @@
   transition:
     transform 180ms ease,
     box-shadow 180ms ease;
+}
+
+.event-card__favorite {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #d9e0e8;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0c3294;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.event-card__favorite:hover,
+.event-card__favorite[aria-pressed="true"] {
+  border-color: #0c3294;
+  background: #0c3294;
+  color: #ffffff;
+}
+
+.event-card__favorite:focus-visible {
+  outline: 3px solid #e45d48;
+  outline-offset: 3px;
 }
 
 .event-card:hover {
