@@ -1,122 +1,11 @@
 import { useState } from "react";
 import "./Events.css";
 
-export const events = [
-  {
-    date: "18 MAR",
-    title: "Encontro de boas-vindas",
-    description:
-      "Conheca o REGIIMENTO, seus projetos e as pessoas que fazem parte do grupo.",
-    type: "Integracao",
-    time: "18h30",
-    location: "Sala de reunioes da FCI",
-  },
-  {
-    date: "25 MAR",
-    title: "Roda de conversa: informacao e sociedade",
-    description:
-      "Um encontro aberto para trocar ideias sobre os caminhos da informacao na universidade.",
-    type: "Debate",
-    time: "19h",
-    location: "Auditorio da BCE",
-  },
-  {
-    date: "02 ABR",
-    title: "Oficina de pesquisa academica",
-    description:
-      "Aprenda a organizar uma pesquisa e encontre novas ferramentas para seus estudos.",
-    type: "Oficina",
-    time: "14h",
-    location: "Laboratorio 2 da FCI",
-  },
-  {
-    date: "09 ABR",
-    title: "Encontro sobre informação e cidadania",
-    description:
-      "Uma conversa sobre o papel da informação na participação social e na vida universitária.",
-    type: "Debate",
-    time: "18h30",
-    location: "Sala de reuniões da FCI",
-  },
-  {
-    date: "16 ABR",
-    title: "Oficina de organização de arquivos",
-    description:
-      "Conheça métodos práticos para organizar arquivos pessoais e institucionais.",
-    type: "Oficina",
-    time: "14h",
-    location: "Laboratório 2 da FCI",
-  },
-  {
-    date: "23 ABR",
-    title: "Café com pesquisadores",
-    description:
-      "Um encontro para compartilhar experiências, projetos e oportunidades de pesquisa.",
-    type: "Integração",
-    time: "16h",
-    location: "Espaço de convivência da FCI",
-  },
-  {
-    date: "30 ABR",
-    title: "Introdução à pesquisa acadêmica",
-    description:
-      "Aprenda a definir um tema, formular perguntas e dar os primeiros passos em uma pesquisa.",
-    type: "Formação",
-    time: "19h",
-    location: "Auditório da BCE",
-  },
-  {
-    date: "07 MAI",
-    title: "Roda de conversa sobre ciência aberta",
-    description:
-      "Debate sobre colaboração, transparência e compartilhamento na produção científica.",
-    type: "Debate",
-    time: "18h30",
-    location: "Auditório da BCE",
-  },
-  {
-    date: "14 MAI",
-    title: "Visita guiada à Biblioteca Central",
-    description:
-      "Conheça os espaços, serviços e recursos disponíveis para apoiar seus estudos.",
-    type: "Visita",
-    time: "10h",
-    location: "Entrada Leste da BCE",
-  },
-  {
-    date: "21 MAI",
-    title: "Laboratório de ferramentas digitais",
-    description:
-      "Explore ferramentas digitais para organizar referências, dados e projetos acadêmicos.",
-    type: "Laboratório",
-    time: "14h",
-    location: "Laboratório 2 da FCI",
-  },
-  {
-    date: "28 MAI",
-    title: "Seminário de experiências de pesquisa",
-    description:
-      "Integrantes compartilham seus percursos, descobertas e desafios na universidade.",
-    type: "Seminário",
-    time: "18h30",
-    location: "Auditório da FCI",
-  },
-  {
-    date: "04 JUN",
-    title: "Encontro de planejamento do REGIIMENTO",
-    description:
-      "Participe da construção das próximas ações, projetos e atividades do grupo.",
-    type: "Planejamento",
-    time: "17h",
-    location: "Sala de reuniões da FCI",
-  },
-];
-
 const eventsPerPage = 6;
 
-export default function Events({ favoriteIds, onToggleFavorite }) {
+export default function Events({ events, favoriteIds, onToggleFavorite }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const pageCount = Math.ceil(events.length / eventsPerPage);
+  const pageCount = Math.max(1, Math.ceil(events.length / eventsPerPage));
   const visibleEvents = events.slice(
     currentPage * eventsPerPage,
     (currentPage + 1) * eventsPerPage,
@@ -134,17 +23,20 @@ export default function Events({ favoriteIds, onToggleFavorite }) {
         </p>
       </div>
 
+      {events.length === 0 && (
+        <p className="events-list__intro">Nenhum evento cadastrado.</p>
+      )}
       <div className="event-cards">
         {visibleEvents.map((event) => (
-          <article className="event-card" key={event.title}>
+          <article className="event-card" key={event.id}>
             <button
               type="button"
               className="event-card__favorite"
-              aria-label={`${favoriteIds.includes(event.title) ? "Remover dos" : "Adicionar aos"} favoritos: ${event.title}`}
-              aria-pressed={favoriteIds.includes(event.title)}
-              onClick={() => onToggleFavorite(event.title)}
+              aria-label={`${favoriteIds.includes(event.id) ? "Remover dos" : "Adicionar aos"} favoritos: ${event.title}`}
+              aria-pressed={favoriteIds.includes(event.id)}
+              onClick={() => onToggleFavorite(event.id)}
             >
-              {favoriteIds.includes(event.title) ? "★" : "☆"}
+              {favoriteIds.includes(event.id) ? "★" : "☆"}
             </button>
             <div
               className="event-card__date"
@@ -159,11 +51,17 @@ export default function Events({ favoriteIds, onToggleFavorite }) {
               <p>{event.description}</p>
               <div className="event-card__meta">
                 <span>{event.time}</span>
-                <span>{event.location}</span>
               </div>
-              <button type="button" className="event-card__link">
-                Ver detalhes <span aria-hidden="true">-&gt;</span>
-              </button>
+              {event.link && (
+                <a
+                  className="event-card__link"
+                  href={event.link}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ver detalhes <span aria-hidden="true">-&gt;</span>
+                </a>
+              )}
             </div>
           </article>
         ))}

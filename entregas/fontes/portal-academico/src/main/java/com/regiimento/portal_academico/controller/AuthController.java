@@ -1,6 +1,7 @@
 package com.regiimento.portal_academico.controller;
 
 import com.regiimento.portal_academico.security.AuthenticatedUser;
+import com.regiimento.portal_academico.security.AuthenticatedUserResolver;
 import com.regiimento.portal_academico.security.CookieUtil;
 import com.regiimento.portal_academico.security.JwtService;
 import com.regiimento.portal_academico.security.RefreshTokenService;
@@ -24,6 +25,7 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
     private final CookieUtil cookieUtil;
+    private final AuthenticatedUserResolver authenticatedUserResolver;
 
     /**
      * Chamado pela SPA logo após o redirect do OAuth2 (e sempre que o access
@@ -37,7 +39,7 @@ public class AuthController {
                 .orElseThrow(() -> new AccessDeniedException("Refresh token ausente"));
 
         var resultado = refreshTokenService.validarERotacionar(refreshCru);
-        AuthenticatedUser usuarioAutenticado = AuthenticatedUser.de(resultado.usuario());
+        AuthenticatedUser usuarioAutenticado = authenticatedUserResolver.resolver(resultado.usuario());
         String novoAccessToken = jwtService.gerarToken(usuarioAutenticado);
 
         var cookie = cookieUtil.construirCookieRefresh(

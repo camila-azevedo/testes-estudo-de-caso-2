@@ -11,7 +11,7 @@ export default function FeaturedEvents({ events }) {
       <div className="featured-event__copy">
         <p className="section-kicker section-kicker--light">Eventos em destaque</p>
         {activeEvent ? (
-          <article className="featured-event__item" key={activeEvent.title}>
+          <article className="featured-event__item" key={activeEvent.id}>
             <p className="featured-event__item-meta">
               {activeEvent.date} · {activeEvent.type}
             </p>
@@ -21,7 +21,6 @@ export default function FeaturedEvents({ events }) {
             </p>
             <div className="featured-event__details">
               <span>{activeEvent.time}</span>
-              <span>{activeEvent.location}</span>
             </div>
             {events.length > 1 && (
               <nav className="featured-event__navigation" aria-label="Eventos favoritados">
@@ -39,7 +38,7 @@ export default function FeaturedEvents({ events }) {
                   {events.map((event, index) => (
                     <button
                       type="button"
-                      key={event.title}
+                      key={event.id}
                       className="featured-event__indicator"
                       aria-label={`Mostrar evento ${index + 1}: ${event.title}`}
                       aria-current={index === activeIndex ? "true" : undefined}
