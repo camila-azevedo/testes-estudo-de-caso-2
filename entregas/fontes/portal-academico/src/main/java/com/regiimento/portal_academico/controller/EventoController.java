@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class EventoController {
     @PreAuthorize("hasRole('INTEGRANTE')")
     @PostMapping
     public ResponseEntity<EventoResponse> criar(
-            @RequestBody EventoRequest request,
+            @Valid @RequestBody EventoRequest request,
             @AuthenticationPrincipal AuthenticatedUser usuarioLogado
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventoService.criar(request, usuarioLogado));
@@ -48,7 +49,7 @@ public class EventoController {
     @PutMapping("/{id}")
     public ResponseEntity<EventoResponse> atualizar(
             @PathVariable Long id,
-            @RequestBody EventoRequest request,
+            @Valid @RequestBody EventoRequest request,
             @AuthenticationPrincipal AuthenticatedUser usuarioLogado
     ) {
         return ResponseEntity.ok(eventoService.atualizar(id, request, usuarioLogado));

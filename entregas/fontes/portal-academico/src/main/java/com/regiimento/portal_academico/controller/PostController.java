@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class PostController {
     @PreAuthorize("hasRole('INTEGRANTE')")
     @PostMapping
     public ResponseEntity<PostResponse> criar(
-            @RequestBody PostRequest request,
+            @Valid @RequestBody PostRequest request,
             @AuthenticationPrincipal AuthenticatedUser usuarioLogado
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.criar(request, usuarioLogado));
@@ -49,7 +50,7 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> atualizar(
             @PathVariable Long id,
-            @RequestBody PostRequest request,
+            @Valid @RequestBody PostRequest request,
             @AuthenticationPrincipal AuthenticatedUser usuarioLogado
     ) {
         return ResponseEntity.ok(postService.atualizar(id, request, usuarioLogado));

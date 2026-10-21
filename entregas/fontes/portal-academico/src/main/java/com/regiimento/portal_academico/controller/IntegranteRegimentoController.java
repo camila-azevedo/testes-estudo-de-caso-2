@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,9 @@ public class IntegranteRegimentoController {
         return ResponseEntity.ok(integranteService.listarAtivos());
     }
 
+    // Diferente do /api/integrantes (lista pública de quem está ativo), este inclui
+    // inativos e serve pra administração — expõe e-mail de todo mundo, então é admin-only.
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/todos")
     public ResponseEntity<List<IntegranteRegimentoResponse>> listarTodos() {
         return ResponseEntity.ok(integranteService.listarTodos());
@@ -38,7 +42,7 @@ public class IntegranteRegimentoController {
     // sentido em casos excepcionais (ex.: importação manual). Restrito a admin.
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<IntegranteRegimentoResponse> criar(@RequestBody IntegranteRegimentoRequest request) {
+    public ResponseEntity<IntegranteRegimentoResponse> criar(@Valid @RequestBody IntegranteRegimentoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(integranteService.criar(request));
     }
 
@@ -47,14 +51,14 @@ public class IntegranteRegimentoController {
     @PostMapping("/{id}/promover")
     public ResponseEntity<IntegranteRegimentoResponse> promover(
             @PathVariable Long id,
-            @RequestBody PromoverIntegranteRequest request
+            @Valid @RequestBody PromoverIntegranteRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(integranteService.promover(id, request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<IntegranteRegimentoResponse> atualizar(@PathVariable Long id, @RequestBody IntegranteRegimentoRequest request) {
+    public ResponseEntity<IntegranteRegimentoResponse> atualizar(@PathVariable Long id, @Valid @RequestBody IntegranteRegimentoRequest request) {
         return ResponseEntity.ok(integranteService.atualizar(id, request));
     }
 

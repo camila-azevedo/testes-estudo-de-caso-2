@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,13 +33,13 @@ public class PublicacaoAcademicaController {
     // mesma regra já usada em PostController/EventoController.
     @PreAuthorize("hasRole('INTEGRANTE')")
     @PostMapping
-    public ResponseEntity<PublicacaoAcademicaResponse> criar(@RequestBody PublicacaoAcademicaRequest request) {
+    public ResponseEntity<PublicacaoAcademicaResponse> criar(@Valid @RequestBody PublicacaoAcademicaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(publicacaoService.criar(request));
     }
 
     @PreAuthorize("hasRole('INTEGRANTE')")
     @PutMapping("/{id}")
-    public ResponseEntity<PublicacaoAcademicaResponse> atualizar(@PathVariable Long id, @RequestBody PublicacaoAcademicaRequest request) {
+    public ResponseEntity<PublicacaoAcademicaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody PublicacaoAcademicaRequest request) {
         return ResponseEntity.ok(publicacaoService.atualizar(id, request));
     }
 

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class ComentarioController {
 
     @PostMapping
     public ResponseEntity<ComentarioResponse> criar(
-            @RequestBody ComentarioRequest request,
+            @Valid @RequestBody ComentarioRequest request,
             @AuthenticationPrincipal AuthenticatedUser usuarioLogado
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(comentarioService.criar(request, usuarioLogado));
