@@ -24,7 +24,7 @@ public class PublicacaoAcademicaService {
 
     @Transactional(readOnly = true)
     public List<PublicacaoAcademicaResponse> listarTodas() {
-        return publicacaoRepository.findAll().stream()
+        return publicacaoRepository.findAllByOrderByDataPublicacaoDesc().stream()
                 .map(PublicacaoAcademicaResponse::new)
                 .toList();
     }
@@ -44,10 +44,7 @@ public class PublicacaoAcademicaService {
         pub.setDataPublicacao(request.getDataPublicacao());
         pub.setTipo(request.getTipo());
 
-        if (request.getAutoresIds() != null && !request.getAutoresIds().isEmpty()) {
-            Set<Usuario> autores = new HashSet<>(usuarioRepository.findAllById(request.getAutoresIds()));
-            pub.setAutores(autores);
-        }
+        pub.setAutores(buscarAutores(request.getAutoresIds()));
 
         return new PublicacaoAcademicaResponse(publicacaoRepository.save(pub));
     }
@@ -62,12 +59,21 @@ public class PublicacaoAcademicaService {
         pub.setDataPublicacao(request.getDataPublicacao());
         pub.setTipo(request.getTipo());
 
-        if (request.getAutoresIds() != null) {
-            Set<Usuario> autores = new HashSet<>(usuarioRepository.findAllById(request.getAutoresIds()));
-            pub.setAutores(autores);
-        }
+        pub.setAutores(buscarAutores(request.getAutoresIds()));
 
         return new PublicacaoAcademicaResponse(publicacaoRepository.save(pub));
+    }
+
+    // findAllById ignora em silêncio os ids que não existem: sem esta checagem, uma publicação
+    // podia ser salva com menos autores (ou nenhum) do que o pedido.
+    private Set<Usuario> buscarAutores(Set<Long> ids) {
+        List<Usuario> encontrados = usuarioRepository.findAllById(ids);
+        if (encontrados.size() != ids.size()) {
+            List<Long> achados = encontrados.stream().map(Usuario::getId).toList();
+            List<Long> faltando = ids.stream().filter(id -> !achados.contains(id)).sorted().toList();
+            throw new ResourceNotFoundException("Autor(es) não encontrado(s): " + faltando);
+        }
+        return new HashSet<>(encontrados);
     }
 
     @Transactional

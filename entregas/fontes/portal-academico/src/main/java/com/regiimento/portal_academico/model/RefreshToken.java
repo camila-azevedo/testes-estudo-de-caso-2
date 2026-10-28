@@ -35,6 +35,10 @@ public class RefreshToken {
     @Column(nullable = false)
     private Boolean revogado = false;
 
+    // Preenchido só quando o token é trocado por um novo (rotação), nunca no logout.
+    @Column(name = "rotacionado_em")
+    private LocalDateTime rotacionadoEm;
+
     @PrePersist
     protected void aoPersistir() {
         if (criadoEm == null) {

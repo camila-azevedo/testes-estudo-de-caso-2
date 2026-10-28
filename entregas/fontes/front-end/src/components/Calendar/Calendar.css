@@ -1,7 +1,7 @@
 .events-section {
   width: 100%;
   min-height: 330px;
-  padding: 70px 40px;
+  padding: 70px max(clamp(20px, 5vw, 64px), calc((100% - 1180px) / 2));
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -62,6 +62,11 @@
   color: #20252b;
   font-size: 0.75rem;
   cursor: pointer;
+}
+
+a.calendar-action {
+  display: inline-block;
+  text-decoration: none;
 }
 
 .calendar-action span {
@@ -157,7 +162,7 @@
 
 @media (max-width: 700px) {
   .events-section {
-    padding: 48px 20px;
+    padding: 48px clamp(20px, 5vw, 64px);
     flex-direction: column;
   }
 
@@ -171,4 +176,69 @@
   .calendar-area {
     align-items: flex-start;
   }
+}
+
+/* Dia com evento cadastrado: o quadrado inteiro do dia fica colorido */
+.calendar-container .react-calendar__tile.has-event {
+  background-color: #fcd34d;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.calendar-container .react-calendar__tile.has-event:hover {
+  background-color: #fbbf24;
+}
+
+/* Se o dia com evento for hoje, mantém um contorno azul para ainda dar para achar o dia atual */
+.calendar-container .react-calendar__tile.has-event.react-calendar__tile--now {
+  box-shadow: inset 0 0 0 2px #143eca;
+}
+
+/* Eventos do dia selecionado */
+.calendar-day-events {
+  width: 320px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 0.85rem;
+}
+
+.calendar-day-events ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-day-events li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.calendar-day-events__time {
+  flex: none;
+  min-width: 42px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.calendar-day-events a {
+  color: #0b1f4d;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.calendar-day-events a:hover {
+  text-decoration: underline;
+}
+
+.calendar-day-events__empty {
+  margin: 0;
+  color: #737373;
 }

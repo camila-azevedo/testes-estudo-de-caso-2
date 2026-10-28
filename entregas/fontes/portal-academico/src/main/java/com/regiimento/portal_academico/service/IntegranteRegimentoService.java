@@ -1,12 +1,16 @@
 package com.regiimento.portal_academico.service;
 
+import com.regiimento.portal_academico.dto.request.AtualizarIntegranteRequest;
+import com.regiimento.portal_academico.dto.request.AtualizarStatusIntegranteRequest;
 import com.regiimento.portal_academico.dto.request.IntegranteRegimentoRequest;
 import com.regiimento.portal_academico.dto.request.PromoverIntegranteRequest;
+import com.regiimento.portal_academico.dto.response.IntegranteRegimentoPublicoResponse;
 import com.regiimento.portal_academico.dto.response.IntegranteRegimentoResponse;
 import com.regiimento.portal_academico.exception.ResourceNotFoundException;
 import com.regiimento.portal_academico.model.IntegranteRegimento;
 import com.regiimento.portal_academico.repository.IntegranteRegimentoRepository;
 import com.regiimento.portal_academico.repository.UsuarioInteressadoRepository;
+import com.regiimento.portal_academico.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +27,9 @@ public class IntegranteRegimentoService {
     private final UsuarioInteressadoRepository usuarioInteressadoRepository;
 
     @Transactional(readOnly = true)
-    public List<IntegranteRegimentoResponse> listarAtivos() {
+    public List<IntegranteRegimentoPublicoResponse> listarAtivos() {
         return integranteRepository.findByStatusAtivoTrue().stream()
-                .map(IntegranteRegimentoResponse::new)
+                .map(IntegranteRegimentoPublicoResponse::new)
                 .toList();
     }
 
@@ -37,10 +41,10 @@ public class IntegranteRegimentoService {
     }
 
     @Transactional(readOnly = true)
-    public IntegranteRegimentoResponse buscarPorId(Long id) {
+    public IntegranteRegimentoPublicoResponse buscarPorId(Long id) {
         IntegranteRegimento integrante = integranteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Integrante não encontrado com id: " + id));
-        return new IntegranteRegimentoResponse(integrante);
+        return new IntegranteRegimentoPublicoResponse(integrante);
     }
 
     @Transactional
@@ -60,7 +64,7 @@ public class IntegranteRegimentoService {
     }
 
     @Transactional
-    public IntegranteRegimentoResponse atualizar(Long id, IntegranteRegimentoRequest request) {
+    public IntegranteRegimentoResponse atualizar(Long id, AtualizarIntegranteRequest request) {
         IntegranteRegimento integrante = integranteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Integrante não encontrado com id: " + id));
 
@@ -70,6 +74,38 @@ public class IntegranteRegimentoService {
         integrante.setLinhaPesquisa(request.getLinhaPesquisa());
         integrante.setLattes(request.getLattes());
         integrante.setTitulacao(request.getTitulacao());
+
+        return new IntegranteRegimentoResponse(integranteRepository.save(integrante));
+    }
+
+    /**
+     * Ativa/desativa um integrante e/ou concede/retira o papel de admin. Desativar é o caminho
+     * normal para "tirar" alguém: apagar falha quando a pessoa já tem posts, eventos ou comentários.
+     * O admin não pode desativar nem rebaixar a si mesmo, o que garante que sempre sobra um admin.
+     */
+    @Transactional
+    public IntegranteRegimentoResponse atualizarStatus(Long id, AtualizarStatusIntegranteRequest request,
+                                                       AuthenticatedUser adminLogado) {
+        if (request.getStatusAtivo() == null && request.getAdministrador() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe statusAtivo e/ou administrador");
+        }
+
+        IntegranteRegimento integrante = integranteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Integrante não encontrado com id: " + id));
+
+        boolean ehOProprioAdmin = integrante.getId().equals(adminLogado.id());
+        if (ehOProprioAdmin && (Boolean.FALSE.equals(request.getStatusAtivo())
+                || Boolean.FALSE.equals(request.getAdministrador()))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Você não pode se desativar nem remover o seu próprio acesso de administrador");
+        }
+
+        if (request.getStatusAtivo() != null) {
+            integrante.setStatusAtivo(request.getStatusAtivo());
+        }
+        if (request.getAdministrador() != null) {
+            integrante.setAdministrador(request.getAdministrador());
+        }
 
         return new IntegranteRegimentoResponse(integranteRepository.save(integrante));
     }
@@ -97,9 +133,10 @@ public class IntegranteRegimentoService {
             throw new ResourceNotFoundException("Usuário interessado não encontrado com id: " + usuarioId);
         }
 
-        // remove a linha da subclasse antiga antes de inserir a nova —
-        // o id_usuario na tabela usuario continua o mesmo o tempo todo
-        usuarioInteressadoRepository.deleteById(usuarioId);
+        // Remove só a linha da subclasse antiga (SQL nativo) antes de inserir a nova: o
+        // id_usuario na tabela usuario precisa continuar existindo. NÃO usar deleteById aqui:
+        // com herança JOINED o JPA apagaria também a linha de usuario.
+        usuarioInteressadoRepository.removerLinhaInteressado(usuarioId);
 
         integranteRepository.inserirComoIntegrante(
                 usuarioId,

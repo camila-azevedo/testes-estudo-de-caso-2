@@ -1,12 +1,16 @@
 .aboutUs {
   width: 100%;
+  box-sizing: border-box;
   margin-top: 0;
-  padding: 60px 40px;
+  /* margem lateral: 20px a 64px conforme a tela; em telas largas o conteúdo
+     fica centralizado com no máximo 1180px (mesma largura da página de eventos) */
+  padding: 60px max(clamp(20px, 5vw, 64px), calc((100% - 1180px) / 2));
   background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
   color: rgb(17, 19, 86);
   text-align: left;
   max-width: 100%;
   font-family: roboto, sans-serif;
+  overflow-wrap: break-word;
   border-bottom: 1px solid #e9ecef;
 }
 

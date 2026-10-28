@@ -11,7 +11,8 @@ import FeaturedTexts from "./components/FeaturedTexts/FeaturedTexts";
 import Members from "./components/Members/Members";
 import { useApiList } from "./useApi";
 import { mapEvento, mapPost } from "./mappers";
-import { refresh } from "./api";
+import { del, post, refresh } from "./api";
+import { useAuth } from "./authContext";
 
 function HomePage() {
   return (
@@ -26,7 +27,9 @@ function HomePage() {
 }
 
 function EventsPage() {
-  const { items: events, error } = useApiList("/eventos", mapEvento);
+  const { items: events, error, reload } = useApiList("/eventos", mapEvento);
+  const { user } = useAuth();
+  const isIntegrante = user?.tipo === "INTEGRANTE";
   const [favoriteIds, setFavoriteIds] = useState(() => {
     try {
       const savedFavorites = JSON.parse(
@@ -51,9 +54,35 @@ function EventsPage() {
         : [...currentFavorites, eventId],
     );
   };
-  const featuredEvents = events.filter((event) =>
-    favoriteIds.includes(event.id),
+  // Em destaque: os marcados como "destaque" por quem cadastrou + os favoritos deste navegador.
+  const featuredEvents = events.filter(
+    (event) => event.destaque || favoriteIds.includes(event.id),
   );
+
+  const createEvent = async (values) => {
+    await post("/eventos", {
+      nomeEvento: values.nomeEvento,
+      descricao: values.descricao,
+      dataEvento: values.dataEvento,
+      linkAcesso: values.linkAcesso || undefined,
+      destaque: values.destaque,
+    });
+    reload();
+  };
+
+  // Só o autor ou um admin pode excluir (o back-end também confere).
+  const canDeleteEvent = (event) =>
+    isIntegrante && (user.administrador || event.ownerId === user.id);
+
+  const deleteEvent = async (event) => {
+    if (!window.confirm(`Excluir o evento "${event.title}"?`)) return;
+    try {
+      await del(`/eventos/${event.id}`);
+      reload();
+    } catch (err) {
+      window.alert(err.message || "Não foi possível excluir o evento.");
+    }
+  };
 
   return (
     <>
@@ -65,6 +94,10 @@ function EventsPage() {
           events={events}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
+          canCreate={isIntegrante}
+          onCreate={createEvent}
+          canDelete={canDeleteEvent}
+          onDelete={deleteEvent}
         />
       </main>
       <Footer />
@@ -83,14 +116,46 @@ function MembersPage() {
 }
 
 function TextosParaDiscussaoPage() {
-  const { items: texts, error } = useApiList("/posts", mapPost);
+  const { items: texts, error, reload } = useApiList("/posts", mapPost);
+  const { user } = useAuth();
+  const isIntegrante = user?.tipo === "INTEGRANTE";
+
+  // O post da API não tem título separado: a primeira linha do texto é o título.
+  const createText = async (values) => {
+    await post("/posts", {
+      conteudoTexto: `${values.titulo.trim()}\n${values.conteudo.trim()}`,
+      tipo: values.tipo,
+      imagem: values.imagem || undefined,
+    });
+    reload();
+  };
+
+  const canDeleteText = (text) =>
+    isIntegrante && (user.administrador || text.ownerId === user.id);
+
+  const deleteText = async (text) => {
+    if (!window.confirm(`Excluir o texto "${text.title}"?`)) return;
+    try {
+      await del(`/posts/${text.id}`);
+      reload();
+    } catch (err) {
+      window.alert(err.message || "Não foi possível excluir o texto.");
+    }
+  };
+
   return (
     <>
       <NavigationBar />
       <main>
         <FeaturedTexts featuredText={texts[0]} />
         {error && <p>Não foi possível carregar os textos.</p>}
-        <Texts texts={texts} />
+        <Texts
+          texts={texts}
+          canCreate={isIntegrante}
+          onCreate={createText}
+          canDelete={canDeleteText}
+          onDelete={deleteText}
+        />
       </main>
       <Footer />
     </>

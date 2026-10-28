@@ -18,6 +18,7 @@ export function mapEvento(e) {
     link: e.linkAcesso || "",
     image: e.imagem || "",
     destaque: Boolean(e.destaque),
+    ownerId: e.cadastradoPorId,
   };
 }
 
@@ -32,6 +33,8 @@ export function mapIntegrante(i) {
     email: i.email,
     lattes: i.lattes || "",
     active: i.statusAtivo !== false,
+    // só vem nas rotas de admin (/integrantes/todos); a lista pública não expõe esse campo
+    admin: Boolean(i.administrador),
   };
 }
 
@@ -46,6 +49,7 @@ export function mapPost(p, index = 0) {
     title: primeira,
     description: resto.join(" ") || "",
     author: p.cadastradoPorNome,
+    ownerId: p.cadastradoPorId,
     date: `${dois(d.getDate())} ${MESES_LONGOS[d.getMonth()]} ${d.getFullYear()}`,
     comments: p.totalComentarios,
     image: p.imagem || "/banner.png",

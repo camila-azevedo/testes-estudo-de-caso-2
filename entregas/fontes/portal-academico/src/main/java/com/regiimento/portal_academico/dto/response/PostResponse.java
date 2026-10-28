@@ -15,9 +15,9 @@ public class PostResponse {
     private final String imagem;
     private final Long cadastradoPorId;
     private final String cadastradoPorNome;
-    private final int totalComentarios;
+    private final long totalComentarios;
 
-    public PostResponse(Post post) {
+    public PostResponse(Post post, long totalComentarios) {
         this.id = post.getId();
         this.dataCriacao = post.getDataCriacao();
         this.conteudoTexto = post.getConteudoTexto();
@@ -25,6 +25,6 @@ public class PostResponse {
         this.imagem = post.getImagem();
         this.cadastradoPorId = post.getCadastradoPor().getId();
         this.cadastradoPorNome = post.getCadastradoPor().getNome();
-        this.totalComentarios = post.getComentarios().size();
+        this.totalComentarios = totalComentarios;
     }
 }

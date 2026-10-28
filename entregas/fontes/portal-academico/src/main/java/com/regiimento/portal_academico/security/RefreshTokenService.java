@@ -45,6 +45,9 @@ public class RefreshTokenService {
     @Value("${app.jwt.refresh-expiracao-dias:30}")
     private long expiracaoDias;
 
+    @Value("${app.jwt.refresh-tolerancia-segundos:20}")
+    private long toleranciaSegundos;
+
     public record NovoRefreshToken(String valorCru, LocalDateTime expiraEm) {}
 
     @Transactional
@@ -73,8 +76,18 @@ public class RefreshTokenService {
         RefreshToken entidade = refreshTokenRepository.findByTokenHash(hash(valorCru))
                 .orElseThrow(() -> new AccessDeniedException("Refresh token inválido"));
 
+        if (Boolean.TRUE.equals(entidade.getRevogado()) && foiRotacionadoHaPoucoTempo(entidade)) {
+            // Duas requisições chegaram com o mesmo cookie quase ao mesmo tempo (F5 duplo, duas abas,
+            // navegação que cancelou a resposta antes do Set-Cookie chegar). Não é roubo: emite um
+            // token novo para esta requisição também, sem revogar as outras sessões.
+            Usuario usuario = usuarioRepository.findById(entidade.getUsuario().getId())
+                    .orElseThrow(() -> new AccessDeniedException("Usuário não encontrado"));
+            return new NovoRefreshTokenComUsuario(usuario, gerar(usuario));
+        }
+
         if (Boolean.TRUE.equals(entidade.getRevogado())) {
-            // Reuso de um token já rotacionado: sinal forte de token roubado.
+            // Reuso de um token já rotacionado (fora da janela de tolerância) ou de um token
+            // revogado no logout: sinal forte de token roubado.
             // Chamada via "self" (proxy) + REQUIRES_NEW: isso commita numa
             // transação própria, independente do que acontecer depois aqui.
             // Mesmo quando o AccessDeniedException abaixo desfizer a transação
@@ -88,6 +101,7 @@ public class RefreshTokenService {
         }
 
         entidade.setRevogado(true);
+        entidade.setRotacionadoEm(LocalDateTime.now());
         refreshTokenRepository.save(entidade);
 
         Usuario usuario = usuarioRepository.findById(entidade.getUsuario().getId())
@@ -95,6 +109,13 @@ public class RefreshTokenService {
 
         NovoRefreshToken novo = gerar(usuario);
         return new NovoRefreshTokenComUsuario(usuario, novo);
+    }
+
+    // Só tokens trocados por rotação entram na tolerância; tokens revogados no logout não têm
+    // rotacionadoEm e nunca são aceitos de novo.
+    private boolean foiRotacionadoHaPoucoTempo(RefreshToken entidade) {
+        return entidade.getRotacionadoEm() != null
+                && entidade.getRotacionadoEm().isAfter(LocalDateTime.now().minusSeconds(toleranciaSegundos));
     }
 
     public record NovoRefreshTokenComUsuario(Usuario usuario, NovoRefreshToken token) {}
