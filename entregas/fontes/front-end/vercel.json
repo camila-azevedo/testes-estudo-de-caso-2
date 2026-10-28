@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://regiimento-api-svmvny-805f3c-31-97-175-49.sslip.io/api/:path*" },
+    { "source": "/oauth2/:path*", "destination": "https://regiimento-api-svmvny-805f3c-31-97-175-49.sslip.io/oauth2/:path*" },
+    { "source": "/login/:path*", "destination": "https://regiimento-api-svmvny-805f3c-31-97-175-49.sslip.io/login/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
