@@ -1,13 +1,18 @@
 package com.regiimento.portal_academico.controller;
 
+import com.regiimento.portal_academico.dto.request.AtualizarIntegranteRequest;
+import com.regiimento.portal_academico.dto.request.AtualizarStatusIntegranteRequest;
 import com.regiimento.portal_academico.dto.request.IntegranteRegimentoRequest;
 import com.regiimento.portal_academico.dto.request.PromoverIntegranteRequest;
+import com.regiimento.portal_academico.dto.response.IntegranteRegimentoPublicoResponse;
 import com.regiimento.portal_academico.dto.response.IntegranteRegimentoResponse;
+import com.regiimento.portal_academico.security.AuthenticatedUser;
 import com.regiimento.portal_academico.service.IntegranteRegimentoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +26,7 @@ public class IntegranteRegimentoController {
     private final IntegranteRegimentoService integranteService;
 
     @GetMapping
-    public ResponseEntity<List<IntegranteRegimentoResponse>> listarAtivos() {
+    public ResponseEntity<List<IntegranteRegimentoPublicoResponse>> listarAtivos() {
         return ResponseEntity.ok(integranteService.listarAtivos());
     }
 
@@ -34,7 +39,7 @@ public class IntegranteRegimentoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<IntegranteRegimentoResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<IntegranteRegimentoPublicoResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(integranteService.buscarPorId(id));
     }
 
@@ -58,8 +63,19 @@ public class IntegranteRegimentoController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<IntegranteRegimentoResponse> atualizar(@PathVariable Long id, @Valid @RequestBody IntegranteRegimentoRequest request) {
+    public ResponseEntity<IntegranteRegimentoResponse> atualizar(@PathVariable Long id, @Valid @RequestBody AtualizarIntegranteRequest request) {
         return ResponseEntity.ok(integranteService.atualizar(id, request));
+    }
+
+    // Ativar/desativar integrante e conceder/retirar o papel de admin.
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<IntegranteRegimentoResponse> atualizarStatus(
+            @PathVariable Long id,
+            @RequestBody AtualizarStatusIntegranteRequest request,
+            @AuthenticationPrincipal AuthenticatedUser adminLogado
+    ) {
+        return ResponseEntity.ok(integranteService.atualizarStatus(id, request, adminLogado));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

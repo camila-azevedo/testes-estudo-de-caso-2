@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { del, get, post, put } from "../../api";
-import { useAuth } from "../../auth";
+import { ApiError, del, get, patch, post, put } from "../../api";
+import { useAuth } from "../../authContext";
 import { mapIntegrante } from "../../mappers";
 import { useApiList } from "../../useApi";
 import "./Members.css";
@@ -8,8 +8,9 @@ import "./Members.css";
 export default function Members() {
   const { user } = useAuth();
   const isAdmin = Boolean(user?.administrador);
+  // O admin vê todos (inclusive inativos, com a flag de admin); o público só vê os ativos.
   const { items: members, loading, error, reload } = useApiList(
-    "/integrantes",
+    isAdmin ? "/integrantes/todos" : "/integrantes",
     mapIntegrante,
   );
   const [interessados, setInteressados] = useState([]);
@@ -45,6 +46,7 @@ export default function Members() {
       image: "",
       email: "",
       lattes: "",
+      admin: false,
     });
     try {
       // Quem já entrou com o Google e ainda não é integrante.
@@ -52,6 +54,7 @@ export default function Members() {
       setInteressados(todos);
     } catch {
       setInteressados([]);
+      setFormError("Não foi possível carregar a lista de usuários. Tente novamente.");
     }
   };
 
@@ -66,18 +69,18 @@ export default function Members() {
     setFormError("");
     try {
       if (memberForm.id) {
-        // O back-end exige estes campos no PUT, mas só atualiza nome, imagem,
-        // vínculo, linha de pesquisa, Lattes e titulação.
         await put(`/integrantes/${memberForm.id}`, {
-          email: memberForm.email,
           nome: memberForm.name,
           imagem: memberForm.image,
-          idProvedorExterno: "-",
-          autenticacaoProvedor: "-",
           vinculoInstitucional: memberForm.vinculo,
           linhaPesquisa: memberForm.area,
           lattes: memberForm.lattes,
           titulacao: memberForm.role,
+        });
+        // ativo/administrador têm endpoint próprio (só admin, e não pode se rebaixar)
+        await patch(`/integrantes/${memberForm.id}/status`, {
+          statusAtivo: memberForm.active,
+          administrador: memberForm.admin,
         });
       } else {
         await post(`/integrantes/${memberForm.interessadoId}/promover`, {
@@ -85,13 +88,15 @@ export default function Members() {
           linhaPesquisa: memberForm.area,
           lattes: memberForm.lattes,
           titulacao: memberForm.role,
-          administrador: false,
+          administrador: memberForm.admin,
         });
       }
       setMemberForm(null);
       reload();
-    } catch {
-      setFormError("Não foi possível salvar o membro.");
+    } catch (err) {
+      setFormError(
+        err instanceof ApiError ? err.message : "Não foi possível salvar o membro.",
+      );
     }
   };
 
@@ -101,8 +106,12 @@ export default function Members() {
       await del(`/integrantes/${memberForm.id}`);
       setMemberForm(null);
       reload();
-    } catch {
-      setFormError("Não foi possível remover o membro.");
+    } catch (err) {
+      setFormError(
+        err instanceof ApiError && err.status === 409
+          ? "Este membro já tem posts, eventos ou comentários e não pode ser removido. Desmarque \"Membro ativo\" para desativá-lo."
+          : "Não foi possível remover o membro.",
+      );
     }
   };
 
@@ -348,6 +357,28 @@ export default function Members() {
                     setMemberForm({ ...memberForm, lattes: event.target.value })
                   }
                 />
+              </label>
+              {memberForm.id && (
+                <label className="memberActiveToggle">
+                  <input
+                    type="checkbox"
+                    checked={memberForm.active}
+                    onChange={(event) =>
+                      setMemberForm({ ...memberForm, active: event.target.checked })
+                    }
+                  />
+                  Membro ativo
+                </label>
+              )}
+              <label className="memberActiveToggle">
+                <input
+                  type="checkbox"
+                  checked={Boolean(memberForm.admin)}
+                  onChange={(event) =>
+                    setMemberForm({ ...memberForm, admin: event.target.checked })
+                  }
+                />
+                Administrador
               </label>
               {formError && <p role="alert">{formError}</p>}
               <div className="memberFormActions">

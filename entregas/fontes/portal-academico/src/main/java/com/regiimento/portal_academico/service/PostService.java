@@ -6,6 +6,7 @@ import com.regiimento.portal_academico.exception.ResourceNotFoundException;
 import com.regiimento.portal_academico.model.IntegranteRegimento;
 import com.regiimento.portal_academico.model.Post;
 import com.regiimento.portal_academico.repository.IntegranteRegimentoRepository;
+import com.regiimento.portal_academico.repository.ComentarioRepository;
 import com.regiimento.portal_academico.repository.PostRepository;
 import com.regiimento.portal_academico.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,18 +24,29 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final IntegranteRegimentoRepository integranteRepository;
+    private final ComentarioRepository comentarioRepository;
 
     @Transactional(readOnly = true)
     public List<PostResponse> listarTodos() {
-        return postRepository.findAll().stream()
-                .map(PostResponse::new)
-                .toList();
+        return comTotais(postRepository.findAllByOrderByDataCriacaoDesc());
     }
 
     @Transactional(readOnly = true)
     public List<PostResponse> listarPorTipo(String tipo) {
-        return postRepository.findByTipoOrderByDataCriacaoDesc(tipo).stream()
-                .map(PostResponse::new)
+        return comTotais(postRepository.findByTipoOrderByDataCriacaoDesc(tipo));
+    }
+
+    // Uma única consulta traz o total de comentários de todos os posts da lista
+    // (antes era uma consulta por post: post.getComentarios().size()).
+    private List<PostResponse> comTotais(List<Post> posts) {
+        if (posts.isEmpty()) {
+            return List.of();
+        }
+        List<Long> ids = posts.stream().map(Post::getId).toList();
+        Map<Long, Long> totais = new HashMap<>();
+        comentarioRepository.contarPorPostIds(ids).forEach(c -> totais.put(c.getPostId(), c.getTotal()));
+        return posts.stream()
+                .map(post -> new PostResponse(post, totais.getOrDefault(post.getId(), 0L)))
                 .toList();
     }
 
@@ -40,7 +54,7 @@ public class PostService {
     public PostResponse buscarPorId(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado com id: " + id));
-        return new PostResponse(post);
+        return new PostResponse(post, comentarioRepository.countByPostId(id));
     }
 
     @Transactional
@@ -56,7 +70,7 @@ public class PostService {
         post.setImagem(request.getImagem());
         post.setCadastradoPor(integrante);
 
-        return new PostResponse(postRepository.save(post));
+        return new PostResponse(postRepository.save(post), 0);
     }
 
     @Transactional
@@ -73,7 +87,8 @@ public class PostService {
         post.setTipo(request.getTipo());
         post.setImagem(request.getImagem());
 
-        return new PostResponse(postRepository.save(post));
+        Post salvo = postRepository.save(post);
+        return new PostResponse(salvo, comentarioRepository.countByPostId(salvo.getId()));
     }
 
     @Transactional

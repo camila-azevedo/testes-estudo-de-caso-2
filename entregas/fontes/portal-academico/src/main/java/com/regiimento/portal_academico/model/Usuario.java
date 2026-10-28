@@ -36,9 +36,6 @@ public abstract class Usuario {
     @Column(name = "autenticacao_provedor", nullable = false)
     private String autenticacaoProvedor;
 
-    @Column(name = "refresh_token_criptografado")
-    private String refreshTokenCriptografado;
-
     @PrePersist
     protected void aoPersistir() {
         if (dataCriacao == null) {
