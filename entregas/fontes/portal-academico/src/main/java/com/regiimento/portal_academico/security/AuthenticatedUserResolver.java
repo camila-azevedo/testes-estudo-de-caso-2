@@ -26,6 +26,8 @@ public class AuthenticatedUserResolver {
     @Transactional(readOnly = true)
     public AuthenticatedUser resolver(Usuario usuario) {
         return integranteRepository.findById(usuario.getId())
+                // integrante desativado pelo admin perde as permissões de integrante
+                .filter(integrante -> Boolean.TRUE.equals(integrante.getStatusAtivo()))
                 .map(integrante -> new AuthenticatedUser(
                         usuario.getId(),
                         usuario.getEmail(),

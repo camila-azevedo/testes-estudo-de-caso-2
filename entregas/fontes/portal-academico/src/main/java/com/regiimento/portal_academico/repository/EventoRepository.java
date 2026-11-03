@@ -11,5 +11,5 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     List<Evento> findByOrderByDataEventoDesc();
 
     //eventos em destaque
-    List<Evento> findByDestaqueTrue();
+    List<Evento> findByDestaqueTrueOrderByDataEventoDesc();
 }

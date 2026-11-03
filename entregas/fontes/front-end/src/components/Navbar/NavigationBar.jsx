@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./Navbar.module.css";
-import { useAuth } from "../../auth";
+import { useAuth } from "../../authContext";
 
 const NavigationBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

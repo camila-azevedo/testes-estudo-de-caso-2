@@ -11,21 +11,8 @@
 	<groupId>com.regiimento</groupId>
 	<artifactId>portal-academico</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<name>portal-academico</name>
+	<description>API do portal acadêmico REGIIMENTO</description>
 	<properties>
 		<java.version>25</java.version>
 	</properties>
@@ -52,7 +39,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+			<artifactId>spring-boot-starter-security-oauth2-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

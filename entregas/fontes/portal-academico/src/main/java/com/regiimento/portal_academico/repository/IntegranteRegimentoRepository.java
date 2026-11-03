@@ -19,7 +19,7 @@ public interface IntegranteRegimentoRepository extends JpaRepository<IntegranteR
      * uma UsuarioInteressado já persistida em IntegranteRegimento reaproveitando o
      * mesmo id — ele tentaria inserir uma linha nova em usuario.
      */
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = """
             INSERT INTO integrante_regimento
                 (id_usuario, vinculo_institucional, linha_pesquisa, lattes, titulacao, status_ativo, administrador)

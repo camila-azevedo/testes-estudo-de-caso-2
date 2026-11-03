@@ -1,19 +1,28 @@
 package com.regiimento.portal_academico.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -23,7 +32,7 @@ public class GlobalExceptionHandler {
     }
 
     // Campo nulo/vazio/inválido no corpo da requisição (@Valid nos DTOs) — 400,
-    // com a lista de qual campo falhou e por quê, em vez do 500 genérico de antes.
+    // com a lista de qual campo falhou e por quê.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidacao(MethodArgumentNotValidException ex) {
         Map<String, String> erros = new LinkedHashMap<>();
@@ -39,36 +48,59 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(corpo);
     }
 
-    // Ex.: tentar deletar um IntegranteRegimento que ainda tem Post vinculado —
-    // o banco recusa por causa da FK, e isso virava um 500 cru antes disso existir.
+    // JSON malformado / tipo errado no corpo (ex.: texto onde se espera número) e id inválido na
+    // URL (ex.: /api/posts/abc). Sem este handler, o handler genérico lá embaixo transformaria
+    // isso em 500, quando o erro é do cliente (400).
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<Map<String, Object>> handleRequisicaoInvalida(Exception ex) {
+        return corpo(HttpStatus.BAD_REQUEST, "Requisição inválida: verifique o formato dos dados enviados");
+    }
+
+    // Ex.: tentar deletar um integrante que ainda tem Post vinculado (FK), ou valor duplicado
+    // em coluna UNIQUE (e-mail repetido).
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleIntegridade(DataIntegrityViolationException ex) {
+        log.warn("Violação de integridade: {}", ex.getMostSpecificCause().getMessage());
         return corpo(HttpStatus.CONFLICT, "Operação viola uma restrição de integridade do banco " +
                 "(ex.: registro ainda referenciado por outro, ou valor duplicado)");
     }
 
-    // Cobre o ResponseStatusException(CONFLICT, ...) usado em
-    // IntegranteRegimentoService.promover() quando alguém já é integrante,
-    // e qualquer outro uso futuro desse tipo — mantém o mesmo formato de resposta.
+    // Cobre o ResponseStatusException usado nos services e mantém o mesmo formato de resposta.
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
         HttpStatusCode status = ex.getStatusCode();
         return corpo(HttpStatus.valueOf(status.value()), ex.getReason() != null ? ex.getReason() : ex.getMessage());
     }
 
-    // AccessDeniedException (dono-ou-admin nos services, @PreAuthorize nos
-    // controllers) já era traduzida para 403 pelo Spring Security mesmo sem
-    // handler — isso aqui só garante o mesmo formato de corpo que os outros erros.
+    // AccessDeniedException vem de duas fontes: dono-ou-admin nos services e @PreAuthorize nos controllers.
+    // Quem NÃO está autenticado (ex.: token expirado) recebe 401, e não 403: o front só tenta renovar
+    // o token quando recebe 401. Quem está logado mas sem permissão recebe 403.
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAcessoNegado(AccessDeniedException ex) {
-        return corpo(HttpStatus.FORBIDDEN, ex.getMessage());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth instanceof AnonymousAuthenticationToken) {
+            return corpo(HttpStatus.UNAUTHORIZED, "Faça login para continuar");
+        }
+        String mensagem = ex instanceof AuthorizationDeniedException ? "Acesso negado" : ex.getMessage();
+        return corpo(HttpStatus.FORBIDDEN, mensagem);
     }
 
-    // Qualquer coisa não prevista: nunca vaza stacktrace/mensagem interna —
-    // server.error.include-stacktrace já cobre o endpoint de erro padrão do
-    // Spring, isso aqui cobre as respostas que passam por este handler.
+    // Qualquer coisa não prevista. Os erros do próprio Spring MVC (404 de URL inexistente, 405, 415...)
+    // implementam ErrorResponse e mantêm o status original; o resto é erro nosso: 500 + log com o
+    // stacktrace (sem log, um 500 não deixa rastro nenhum no console).
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenerico(Exception ex) {
+        if (ex instanceof ErrorResponse erro) {
+            int codigo = erro.getStatusCode().value();
+            String mensagem = switch (codigo) {
+                case 404 -> "Recurso não encontrado";
+                case 405 -> "Método HTTP não permitido para este endereço";
+                case 415 -> "Tipo de conteúdo não suportado";
+                default -> erro.getBody().getDetail() != null ? erro.getBody().getDetail() : "Requisição inválida";
+            };
+            return corpo(HttpStatus.valueOf(codigo), mensagem);
+        }
+        log.error("Erro inesperado", ex);
         return corpo(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno. Tente novamente mais tarde.");
     }
 

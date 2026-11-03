@@ -1,0 +1,51 @@
+.contentForm textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd4d5;
+  border-radius: 2px;
+  color: #17273d;
+  font:
+    0.82rem Arial,
+    sans-serif;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.contentForm textarea:focus-visible {
+  outline: 2px solid #4a8790;
+  outline-offset: 1px;
+}
+
+.contentForm [role="alert"] {
+  margin: 0;
+  color: #a12b2b;
+  font:
+    600 0.78rem Arial,
+    sans-serif;
+}
+
+/* barra com o botão "Novo ..." acima das listas */
+.content-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 18px;
+}
+
+.content-delete {
+  margin-top: 10px;
+  padding: 6px 12px;
+  border: 1px solid #b04a4a;
+  border-radius: 2px;
+  background: transparent;
+  color: #8f2f2f;
+  font:
+    600 0.72rem Arial,
+    sans-serif;
+  cursor: pointer;
+}
+
+.content-delete:hover,
+.content-delete:focus-visible {
+  background: #8f2f2f;
+  color: #ffffff;
+}

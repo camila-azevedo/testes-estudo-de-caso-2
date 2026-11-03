@@ -31,7 +31,7 @@ public class EventoService {
 
     @Transactional(readOnly = true)
     public List<EventoResponse> listarDestaques() {
-        return eventoRepository.findByDestaqueTrue().stream()
+        return eventoRepository.findByDestaqueTrueOrderByDataEventoDesc().stream()
                 .map(EventoResponse::new)
                 .toList();
     }

@@ -1,10 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import ContentForm from "../ContentForm/ContentForm";
 import "./Events.css";
 
 const eventsPerPage = 6;
 
-export default function Events({ events, favoriteIds, onToggleFavorite }) {
+const eventFields = [
+  { name: "nomeEvento", label: "Nome do evento", required: true, maxLength: 255 },
+  { name: "descricao", label: "Descrição", type: "textarea" },
+  { name: "dataEvento", label: "Data e hora", type: "datetime-local", required: true },
+  { name: "linkAcesso", label: "Link do evento (opcional)", type: "url", maxLength: 500 },
+  { name: "destaque", label: "Marcar como destaque", type: "checkbox" },
+];
+
+// canCreate/onCreate: botão "Novo evento" (só para integrantes).
+// canDelete(event)/onDelete(event): botão "Excluir" em cada card (autor ou admin).
+export default function Events({
+  events,
+  favoriteIds,
+  onToggleFavorite,
+  canCreate = false,
+  onCreate,
+  canDelete,
+  onDelete,
+}) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [formOpen, setFormOpen] = useState(false);
+
+  // O botão "Novo evento" do calendário da home leva para /eventos#novo.
+  useEffect(() => {
+    if (canCreate && window.location.hash === "#novo") setFormOpen(true);
+  }, [canCreate]);
+
   const pageCount = Math.max(1, Math.ceil(events.length / eventsPerPage));
   const visibleEvents = events.slice(
     currentPage * eventsPerPage,
@@ -22,6 +48,28 @@ export default function Events({ events, favoriteIds, onToggleFavorite }) {
           Encontros para aprender, conversar e construir novas ideias juntos.
         </p>
       </div>
+
+      {canCreate && (
+        <div className="content-toolbar">
+          <button
+            type="button"
+            className="memberActionButton"
+            onClick={() => setFormOpen(true)}
+          >
+            Novo evento
+          </button>
+        </div>
+      )}
+      {formOpen && (
+        <ContentForm
+          kicker="NOVO EVENTO"
+          title="Cadastrar evento"
+          fields={eventFields}
+          submitLabel="Salvar evento"
+          onSubmit={onCreate}
+          onClose={() => setFormOpen(false)}
+        />
+      )}
 
       {events.length === 0 && (
         <p className="events-list__intro">Nenhum evento cadastrado.</p>
@@ -61,6 +109,15 @@ export default function Events({ events, favoriteIds, onToggleFavorite }) {
                 >
                   Ver detalhes <span aria-hidden="true">-&gt;</span>
                 </a>
+              )}
+              {canDelete?.(event) && (
+                <button
+                  type="button"
+                  className="content-delete"
+                  onClick={() => onDelete(event)}
+                >
+                  Excluir
+                </button>
               )}
             </div>
           </article>

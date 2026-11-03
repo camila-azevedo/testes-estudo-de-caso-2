@@ -1,19 +1,15 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { logout as apiLogout, refresh } from "./api";
-
-const AuthContext = createContext({
-  user: null,
-  loading: false,
-  login: () => {},
-  logout: () => {},
-});
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { logout as apiLogout, refresh, temSessaoSalva } from "./api";
+import { AuthContext } from "./authContext";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Só fica "carregando" se este navegador já teve login: visitante anônimo não chama o back-end.
+  const [loading, setLoading] = useState(temSessaoSalva);
 
   // Restaura a sessão ao abrir o site (se o cookie de refresh ainda for válido).
   useEffect(() => {
+    if (!temSessaoSalva()) return undefined;
     let active = true;
     refresh().then((usuario) => {
       if (!active) return;
@@ -34,11 +30,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
 
-export const useAuth = () => useContext(AuthContext);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
