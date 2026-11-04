@@ -89,8 +89,8 @@ const NavigationBar = () => {
                 </a>
               </li>
               <li>
-                <a href="/pesquisas" onClick={closeMenu}>
-                  Pesquisas
+                <a href="/linhas-de-pesquisa" onClick={closeMenu}>
+                  Linhas de Pesquisa
                 </a>
               </li>
             </ul>
@@ -141,7 +141,11 @@ const NavigationBar = () => {
               ×
             </button>
             <h2 id="login-modal-title">Área do Interessado</h2>
-            <button type="button" className={styles.googleLoginBtn} onClick={login}>
+            <button
+              type="button"
+              className={styles.googleLoginBtn}
+              onClick={login}
+            >
               <span aria-hidden="true">G</span>
               Fazer login com Google
             </button>
