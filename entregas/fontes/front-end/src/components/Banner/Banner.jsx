@@ -1,24 +1,29 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./Banner.css";
 
 const slides = [
   {
     eyebrow: "R.E.G.I.I.M.E.N.T.O.",
-    title: "Pesquisa que conecta informação e sociedade",
+    title: "Bem-vindo(a) ao Portal REGIIMENTO",
     description:
-      "Conheça o grupo de pesquisa e as iniciativas que aproximam conhecimento, tecnologia e participação social.",
+      "Página do grupo de pesquisa REGIIMENTO. Conheça nossas pesquisas, atividades e conteúdos acadêmicos.",
   },
   {
-    eyebrow: "CONHECIMENTO EM MOVIMENTO",
-    title: "Ideias que ganham força em conjunto",
+    eyebrow: "Comunicado",
+    title: "Dia da Consciência Negra",
     description:
-      "Um espaço de colaboração para pesquisadores, estudantes e pessoas interessadas em novas perspectivas.",
+      "No dia 20/11, não haverá aula devido ao feriado da Consciência Negra.",
+    image: "/banner2.png",
+    imageAlt:
+      "Comunicado ilustrado sobre o Dia Nacional da Consciência Negra em 20 de novembro.",
   },
   {
-    eyebrow: "PESQUISA E PARTICIPAÇÃO",
-    title: "Faça parte dessa conversa",
-    description:
-      "Acompanhe as atividades, os estudos e as discussões produzidas pela comunidade REGIIMENTO.",
+    eyebrow: "Novidades",
+    title: "Agora nós temos avisos!",
+    description: "Clique em Conteúdo Acadêmico para conferir.",
+    href: "/conteudo",
+    image: "/sino.png",
+    imageAlt: "Ícone de sino para destacar os avisos do portal.",
   },
 ];
 
@@ -28,63 +33,84 @@ const Banner = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((previousIndex) => (previousIndex + 1) % slides.length);
-    }, 5000);
+      setCurrentIndex((index) => (index + 1) % slides.length);
+    }, 6000);
     return () => clearInterval(timer);
   }, []);
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+    setCurrentIndex((index) => (index === 0 ? slides.length - 1 : index - 1));
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % slides.length);
+    setCurrentIndex((index) => (index + 1) % slides.length);
   };
+
+  const announcement = (
+    <div className="announcementBanner" aria-live="polite">
+      <p className="bannerEyebrow">{currentSlide.eyebrow}</p>
+      <h1 className="announcementTitle">{currentSlide.title}</h1>
+      <p className="announcementText">{currentSlide.description}</p>
+    </div>
+  );
+  const slideImage = currentSlide.image && (
+    <img
+      className="bannerNoticeImage"
+      src={currentSlide.image}
+      alt={currentSlide.imageAlt}
+    />
+  );
 
   return (
     <section className="banner" aria-label="Destaques do REGIIMENTO">
-      <div className="carouselContainer">
-        <div className="announcementBanner" aria-live="polite">
-          <p className="bannerEyebrow">{currentSlide.eyebrow}</p>
-          <h1 className="announcementTitle">{currentSlide.title}</h1>
-          <p className="announcementText">{currentSlide.description}</p>
-          <div className="carouselControls">
-            <button
-              type="button"
-              className="carouselButton"
-              aria-label="Destaque anterior"
-              onClick={goToPrevious}
-            >
-              ←
-            </button>
-            <div
-              className="carouselIndicators"
-              aria-label="Selecionar destaque"
-            >
-              {slides.map((slide, index) => (
-                <button
-                  type="button"
-                  key={slide.title}
-                  className={`carouselIndicator ${
-                    currentIndex === index ? "isActive" : ""
-                  }`}
-                  aria-label={`Ir para destaque ${index + 1}`}
-                  aria-current={currentIndex === index ? "true" : undefined}
-                  onClick={() => setCurrentIndex(index)}
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              className="carouselButton"
-              aria-label="Próximo destaque"
-              onClick={goToNext}
-            >
-              →
-            </button>
+      <div
+        className={`carouselContainer ${
+          currentSlide.image ? "carouselContainer--notice" : ""
+        } ${currentSlide.href ? "carouselContainer--cta" : ""}`}
+      >
+        {currentSlide.href ? (
+          <a className="carouselSlideLink" href={currentSlide.href}>
+            {announcement}
+            {slideImage}
+          </a>
+        ) : (
+          <>
+            {announcement}
+            {slideImage}
+          </>
+        )}
+        <div className="carouselControls">
+          <button
+            type="button"
+            className="carouselButton"
+            aria-label="Destaque anterior"
+            onClick={goToPrevious}
+          >
+            ←
+          </button>
+          <div className="carouselIndicators" aria-label="Selecionar destaque">
+            {slides.map((slide, index) => (
+              <button
+                type="button"
+                key={slide.title}
+                className={`carouselIndicator ${
+                  currentIndex === index ? "isActive" : ""
+                }`}
+                aria-label={`Ir para destaque ${index + 1}`}
+                aria-current={currentIndex === index ? "true" : undefined}
+                onClick={() => setCurrentIndex(index)}
+              />
+            ))}
           </div>
+          <button
+            type="button"
+            className="carouselButton"
+            aria-label="Próximo destaque"
+            onClick={goToNext}
+          >
+            →
+          </button>
         </div>
-        <div className="bannerMedia" aria-hidden="true" />
       </div>
     </section>
   );

@@ -9,6 +9,9 @@ import FeaturedEvents from "./components/FeaturedEvents/FeaturedEvents";
 import Texts from "./components/Texts/Texts";
 import FeaturedTexts from "./components/FeaturedTexts/FeaturedTexts";
 import Members from "./components/Members/Members";
+import AcademicContent, {
+  AcademicPublications,
+} from "./components/AcademicContent/AcademicContent";
 import { useApiList } from "./useApi";
 import { mapEvento, mapPost } from "./mappers";
 import { del, post, refresh } from "./api";
@@ -171,6 +174,26 @@ function BibliotecaDigitalPage() {
   );
 }
 
+function AcademicContentPage() {
+  return (
+    <>
+      <NavigationBar />
+      <AcademicContent />
+      <Footer />
+    </>
+  );
+}
+
+function ResearchLinesPage() {
+  return (
+    <>
+      <NavigationBar />
+      <AcademicPublications />
+      <Footer />
+    </>
+  );
+}
+
 function AuthCallbackPage() {
   // O back-end redireciona para cá depois do login com o Google. Troca o cookie
   // de refresh por um access token e volta para a página inicial.
@@ -188,6 +211,8 @@ function App() {
   const isTextosParaDiscussaoPage =
     currentPath === "/textos-para-discussao" || currentPath === "/publicacoes";
   const isBibliotecaDigitalPage = currentPath === "/biblioteca-digital";
+  const isResearchLinesPage =
+    currentPath === "/linhas-de-pesquisa" || currentPath === "/pesquisas";
 
   useEffect(() => {
     // redirecionando para a seção "sobre-nos" se o ID for "#sobre-nos"
@@ -210,6 +235,10 @@ function App() {
     page = <TextosParaDiscussaoPage />;
   } else if (isBibliotecaDigitalPage) {
     page = <BibliotecaDigitalPage />;
+  } else if (currentPath === "/conteudo") {
+    page = <AcademicContentPage />;
+  } else if (isResearchLinesPage) {
+    page = <ResearchLinesPage />;
   }
 
   return <div className="App">{page}</div>;

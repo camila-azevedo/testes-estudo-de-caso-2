@@ -1,25 +1,30 @@
 .banner {
-  position: relative;
   width: 100%;
   margin-top: 70px;
-  padding: 58px 24px;
+  padding: 38px 24px;
   background: #dceaf1 url("/banner.png") center / cover no-repeat;
   box-sizing: border-box;
 }
 
 .carouselContainer {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  position: relative;
+  display: flex;
+  width: min(100%, 1200px);
+  height: 360px;
   align-items: center;
-  gap: 42px;
-  width: min(100%, 1080px);
-  min-height: 290px;
   margin: 0 auto;
-  padding: 28px 38px;
-  border-radius: 4px;
+  padding: 48px 56px 76px;
+  border: 1px solid #e5eaf0;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 12px 30px rgba(14, 42, 63, 0.12);
+  box-shadow: 0 8px 22px rgba(14, 42, 63, 0.08);
   box-sizing: border-box;
+}
+
+.carouselContainer--notice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 48px;
 }
 
 .announcementBanner {
@@ -28,59 +33,101 @@
 }
 
 .bannerEyebrow {
-  margin: 0 0 14px;
-  color: #287c86;
+  margin: 0 0 12px;
+  color: #075a9d;
   font:
-    600 0.72rem/1.2 Arial,
+    700 0.72rem/1.2 Arial,
     sans-serif;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .announcementTitle {
-  max-width: 680px;
+  max-width: 760px;
   margin: 0;
   color: #17273d;
   font:
-    400 2.45rem/1.12 Georgia,
+    400 clamp(2rem, 4vw, 2.8rem) / 1.12 Georgia,
     serif;
 }
 
 .announcementText {
-  max-width: 600px;
-  margin: 18px 0 26px;
+  max-width: 760px;
+  margin: 14px 0 0;
   color: #687681;
   font:
-    0.95rem/1.65 Arial,
+    1rem/1.6 Arial,
     sans-serif;
 }
 
+.carouselContainer--cta {
+  display: block;
+}
+
+.carouselSlideLink {
+  position: absolute;
+  inset: 0 0 64px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  align-items: center;
+  gap: 28px;
+  padding: 24px 56px 0;
+  border-radius: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+  box-sizing: border-box;
+}
+
+.carouselSlideLink:hover {
+  background: #f8fbff;
+}
+
+.carouselSlideLink:focus-visible {
+  outline: 3px solid #9dc9ed;
+  outline-offset: -6px;
+}
+
+.carouselContainer--cta .bannerNoticeImage {
+  width: 220px;
+  height: 220px;
+  max-height: none;
+  border-radius: 10px;
+  background: #f2f6fa;
+  object-fit: cover;
+}
+
+.bannerNoticeImage {
+  display: block;
+  width: 100%;
+  max-height: 290px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
 .carouselControls {
+  position: absolute;
+  z-index: 1;
+  bottom: 24px;
+  left: 56px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.bannerMedia {
-  min-width: 0;
-  height: 250px;
-  background: #e8f0f3;
-}
-
 .carouselButton {
   display: grid;
+  width: 34px;
+  height: 34px;
   place-items: center;
-  width: 38px;
-  height: 38px;
   padding: 0;
   border: 1px solid #d9e1e3;
   border-radius: 50%;
   background: #fff;
   color: #1d5664;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease;
 }
 
 .carouselButton:hover,
@@ -118,42 +165,87 @@
 
 @media (max-width: 760px) {
   .banner {
-    padding: 36px 18px;
+    padding: 28px 18px;
   }
 
   .carouselContainer {
-    grid-template-columns: minmax(0, 1fr);
-    min-height: 0;
-    padding: 26px;
+    height: 330px;
+    padding: 36px 30px 72px;
   }
 
-  .bannerMedia {
-    height: 210px;
+  .carouselContainer--notice {
+    grid-template-columns: minmax(0, 1fr) 180px;
+    gap: 22px;
   }
 
-  .announcementTitle {
-    max-width: 560px;
-    font-size: 2rem;
+  .carouselContainer--cta {
+    display: block;
   }
 
-  .announcementText {
-    margin: 14px 0 20px;
+  .carouselSlideLink {
+    grid-template-columns: minmax(0, 1fr) 150px;
+    gap: 18px;
+    padding: 22px 30px 0;
+  }
+
+  .carouselContainer--cta .bannerNoticeImage {
+    width: 150px;
+    height: 150px;
+  }
+
+  .bannerNoticeImage {
+    max-height: 220px;
+  }
+
+  .carouselControls {
+    left: 30px;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 520px) {
   .banner {
-    padding: 26px 12px;
+    padding: 22px 12px;
   }
 
   .carouselContainer {
-    padding: 22px 18px;
+    height: 300px;
+    padding: 30px 22px 68px;
+  }
+
+  .carouselContainer--notice {
+    grid-template-columns: minmax(0, 1fr) 100px;
+    gap: 12px;
+  }
+
+  .carouselContainer--cta {
+    display: block;
+  }
+
+  .carouselSlideLink {
+    grid-template-columns: minmax(0, 1fr) 100px;
+    gap: 10px;
+    padding: 16px 22px 0;
   }
 
   .announcementTitle {
-    font-size: 1.7rem;
+    font-size: 1.8rem;
   }
-  .bannerMedia {
-    height: 175px;
+
+  .announcementText {
+    font-size: 0.9rem;
+  }
+
+  .bannerNoticeImage {
+    max-height: 150px;
+  }
+
+  .carouselContainer--cta .bannerNoticeImage {
+    width: 100px;
+    height: 100px;
+  }
+
+  .carouselControls {
+    left: 22px;
+    bottom: 20px;
   }
 }

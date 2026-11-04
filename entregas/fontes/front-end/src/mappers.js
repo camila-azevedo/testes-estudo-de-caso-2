@@ -56,3 +56,17 @@ export function mapPost(p, index = 0) {
     imagePosition: IMAGE_POSITIONS[index % IMAGE_POSITIONS.length],
   };
 }
+
+export function mapPublicacao(publicacao) {
+  const [year, month, day] = (publicacao.dataPublicacao || "").split("-");
+  return {
+    id: String(publicacao.id),
+    type: publicacao.tipo || "Publicação",
+    title: publicacao.titulo,
+    summary: publicacao.resumo || "",
+    authors: (publicacao.autores || [])
+      .map((author) => author.nome)
+      .filter(Boolean),
+    date: year && month && day ? `${day}/${month}/${year}` : "",
+  };
+}
