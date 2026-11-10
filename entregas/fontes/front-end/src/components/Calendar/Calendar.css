@@ -26,8 +26,10 @@
 }
 
 .events-button {
-  display: inline-block;
-  min-width: 110px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   margin-top: 32px;
   padding: 10px 24px;
   border: 0;
@@ -40,6 +42,11 @@
   text-align: center;
   text-decoration: none;
   box-sizing: border-box;
+}
+
+.events-button span {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .calendar-area {

@@ -16,6 +16,24 @@
   outline-offset: 1px;
 }
 
+.contentForm__inputSuffix {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.contentForm__inputSuffix input {
+  flex: 1;
+  min-width: 0;
+}
+
+.contentForm__inputSuffix > span {
+  color: #44535f;
+  font:
+    400 0.82rem Arial,
+    sans-serif;
+}
+
 .contentForm [role="alert"] {
   margin: 0;
   color: #a12b2b;

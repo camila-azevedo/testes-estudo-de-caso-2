@@ -8,17 +8,23 @@ export default function ContentForm({
   kicker,
   title,
   fields,
+  initialValues = {},
   submitLabel = "Salvar",
   onSubmit,
   onClose,
 }) {
   const [values, setValues] = useState(() =>
     Object.fromEntries(
-      fields.map((field) => [field.name, field.type === "checkbox" ? false : ""]),
+      fields.map((field) => [
+        field.name,
+        initialValues[field.name] ??
+          (field.type === "checkbox" ? false : ""),
+      ]),
     ),
   );
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [readingFile, setReadingFile] = useState(false);
 
   useEffect(() => {
     const closeWithEscape = (event) => {
@@ -62,6 +68,44 @@ export default function ContentForm({
       );
     }
 
+    if (field.type === "file") {
+      return (
+        <label key={field.name}>
+          {field.label}
+          <input
+            type="file"
+            accept={field.accept}
+            required={field.required}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+              if (field.maxFileSize && file.size > field.maxFileSize) {
+                setError("A imagem deve ter no máximo 2 MB.");
+                update(field.name, "");
+                event.target.value = "";
+                return;
+              }
+
+              const reader = new FileReader();
+              setReadingFile(true);
+              reader.onload = () => {
+                if (typeof reader.result === "string") {
+                  setError("");
+                  update(field.name, reader.result);
+                }
+                setReadingFile(false);
+              };
+              reader.onerror = () => {
+                setError("Não foi possível carregar a imagem.");
+                setReadingFile(false);
+              };
+              reader.readAsDataURL(file);
+            }}
+          />
+        </label>
+      );
+    }
+
     if (field.type === "textarea") {
       return (
         <label key={field.name}>
@@ -82,15 +126,30 @@ export default function ContentForm({
     return (
       <label key={field.name}>
         {field.label}
-        <input
-          type={field.type || "text"}
-          required={field.required}
-          maxLength={field.maxLength}
-          list={listId}
-          autoFocus={index === 0}
-          value={values[field.name]}
-          onChange={(event) => update(field.name, event.target.value)}
-        />
+        {field.suffix ? (
+          <span className="contentForm__inputSuffix">
+            <input
+              type={field.type || "text"}
+              required={field.required}
+              maxLength={field.maxLength}
+              list={listId}
+              autoFocus={index === 0}
+              value={values[field.name]}
+              onChange={(event) => update(field.name, event.target.value)}
+            />
+            <span>{field.suffix}</span>
+          </span>
+        ) : (
+          <input
+            type={field.type || "text"}
+            required={field.required}
+            maxLength={field.maxLength}
+            list={listId}
+            autoFocus={index === 0}
+            value={values[field.name]}
+            onChange={(event) => update(field.name, event.target.value)}
+          />
+        )}
         {listId && (
           <datalist id={listId}>
             {field.suggestions.map((suggestion) => (
@@ -133,8 +192,12 @@ export default function ContentForm({
             <button type="button" onClick={onClose}>
               Cancelar
             </button>
-            <button type="submit" className="memberActionButton" disabled={saving}>
-              {saving ? "Salvando..." : submitLabel}
+            <button
+              type="submit"
+              className="memberActionButton"
+              disabled={saving || readingFile}
+            >
+              {readingFile ? "Carregando imagem..." : saving ? "Salvando..." : submitLabel}
             </button>
           </div>
         </form>

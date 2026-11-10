@@ -1,38 +1,125 @@
 import { useEffect, useState } from "react";
 import ContentForm from "../ContentForm/ContentForm";
+import { getEventCountdown } from "./countdown";
+import {
+  formatEventDate,
+  getEventYear,
+  sortEventsByDate,
+} from "../../eventUtils";
 import "./Events.css";
 
 const eventsPerPage = 6;
 
 const eventFields = [
-  { name: "nomeEvento", label: "Nome do evento", required: true, maxLength: 255 },
-  { name: "descricao", label: "Descrição", type: "textarea" },
-  { name: "dataEvento", label: "Data e hora", type: "datetime-local", required: true },
-  { name: "linkAcesso", label: "Link do evento (opcional)", type: "url", maxLength: 500 },
-  { name: "destaque", label: "Marcar como destaque", type: "checkbox" },
+  { name: "title", label: "Nome do evento", required: true, maxLength: 255 },
+  { name: "description", label: "Descrição", type: "textarea", required: true },
+  { name: "date", label: "Data do evento", type: "date", required: true },
+  { name: "time", label: "Horário do evento", type: "time", required: true },
+  { name: "capacity", label: "Capacidade do evento", suffix: "pessoas" },
+  {
+    name: "link",
+    label: "Link do evento (opcional)",
+    type: "url",
+    maxLength: 500,
+  },
+  {
+    name: "image",
+    label: "Imagem do evento (opcional, até 2 MB)",
+    type: "file",
+    accept: "image/*",
+    maxFileSize: 2 * 1024 * 1024,
+  },
+  {
+    name: "destaque",
+    label: "Exibir em eventos em destaque",
+    type: "checkbox",
+  },
 ];
 
-// canCreate/onCreate: botão "Novo evento" (só para integrantes).
-// canDelete(event)/onDelete(event): botão "Excluir" em cada card (autor ou admin).
 export default function Events({
   events,
+  localEvents,
+  onCreate,
+  onUpdate,
   favoriteIds,
   onToggleFavorite,
-  canCreate = false,
-  onCreate,
   canDelete,
   onDelete,
 }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [now, setNow] = useState(Date.now());
 
-  // O botão "Novo evento" do calendário da home leva para /eventos#novo.
   useEffect(() => {
-    if (canCreate && window.location.hash === "#novo") setFormOpen(true);
-  }, [canCreate]);
+    if (window.location.hash === "#novo") setFormOpen(true);
+  }, []);
 
-  const pageCount = Math.max(1, Math.ceil(events.length / eventsPerPage));
-  const visibleEvents = events.slice(
+  useEffect(() => {
+    const timerId = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timerId);
+  }, []);
+
+  const saveEvent = (values) => {
+    const eventDate = new Date(`${values.date}T${values.time}`);
+    if (!values.title.trim()) throw new Error("Informe o nome do evento.");
+    if (
+      Number.isNaN(eventDate.getTime()) ||
+      eventDate.getTime() <= Date.now()
+    ) {
+      throw new Error("Escolha uma data e hora futuras para o evento.");
+    }
+
+    const newEvent = {
+      ...editingEvent,
+      id: editingEvent?.id || `local-${Date.now()}`,
+      title: values.title.trim(),
+      description: values.description.trim(),
+      capacity: values.capacity.trim(),
+      link: values.link.trim(),
+      image: values.image || editingEvent?.image || "",
+      destaque: values.destaque,
+      dateTime: eventDate.toISOString(),
+      date: `${String(eventDate.getDate()).padStart(2, "0")} ${eventDate.toLocaleString("pt-BR", { month: "short" }).replace(".", "").toUpperCase()}`,
+      dateLong: formatEventDate(eventDate),
+      year: eventDate.getFullYear(),
+      time: eventDate.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      type: values.destaque ? "Destaque" : "Evento",
+    };
+    if (editingEvent) onUpdate(newEvent);
+    else onCreate(newEvent);
+    setCurrentPage(0);
+  };
+
+  const openEditForm = (event) => {
+    setEditingEvent(event);
+    setFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setFormOpen(false);
+    setEditingEvent(null);
+  };
+
+  const editingDate = editingEvent ? new Date(editingEvent.dateTime) : null;
+  const initialValues = editingEvent
+    ? {
+        title: editingEvent.title,
+        description: editingEvent.description,
+        date: `${editingDate.getFullYear()}-${String(editingDate.getMonth() + 1).padStart(2, "0")}-${String(editingDate.getDate()).padStart(2, "0")}`,
+        time: `${String(editingDate.getHours()).padStart(2, "0")}:${String(editingDate.getMinutes()).padStart(2, "0")}`,
+        capacity: editingEvent.capacity || "",
+        link: editingEvent.link || "",
+        destaque: Boolean(editingEvent.destaque),
+      }
+    : undefined;
+
+  const allEvents = sortEventsByDate([...localEvents, ...events]);
+  const pageCount = Math.max(1, Math.ceil(allEvents.length / eventsPerPage));
+  const visibleEvents = allEvents.slice(
     currentPage * eventsPerPage,
     (currentPage + 1) * eventsPerPage,
   );
@@ -49,29 +136,31 @@ export default function Events({
         </p>
       </div>
 
-      {canCreate && (
-        <div className="content-toolbar">
-          <button
-            type="button"
-            className="memberActionButton"
-            onClick={() => setFormOpen(true)}
-          >
-            Novo evento
-          </button>
-        </div>
-      )}
+      <div className="content-toolbar">
+        <button
+          type="button"
+          className="memberActionButton"
+          onClick={() => {
+            setEditingEvent(null);
+            setFormOpen(true);
+          }}
+        >
+          Cadastrar evento
+        </button>
+      </div>
       {formOpen && (
         <ContentForm
-          kicker="NOVO EVENTO"
-          title="Cadastrar evento"
+          kicker={editingEvent ? "EDITAR EVENTO" : "NOVO EVENTO"}
+          title={editingEvent ? "Editar evento" : "Cadastrar evento"}
           fields={eventFields}
-          submitLabel="Salvar evento"
-          onSubmit={onCreate}
-          onClose={() => setFormOpen(false)}
+          initialValues={initialValues}
+          submitLabel={editingEvent ? "Salvar alterações" : "Salvar evento"}
+          onSubmit={saveEvent}
+          onClose={closeForm}
         />
       )}
 
-      {events.length === 0 && (
+      {allEvents.length === 0 && (
         <p className="events-list__intro">Nenhum evento cadastrado.</p>
       )}
       <div className="event-cards">
@@ -92,14 +181,26 @@ export default function Events({
             >
               <strong>{event.date.split(" ")[0]}</strong>
               <span>{event.date.split(" ")[1]}</span>
+              <small>{event.year || getEventYear(event.dateTime)}</small>
             </div>
             <div className="event-card__content">
+              {event.image && (
+                <img className="event-card__image" src={event.image} alt="" />
+              )}
               <span className="event-card__type">{event.type}</span>
               <h2>{event.title}</h2>
               <p>{event.description}</p>
               <div className="event-card__meta">
                 <span>{event.time}</span>
+                {event.capacity && (
+                  <span>Capacidade: {event.capacity} pessoas</span>
+                )}
               </div>
+              {event.dateTime && (
+                <p className="event-card__countdown">
+                  {getEventCountdown(event.dateTime, now)}
+                </p>
+              )}
               {event.link && (
                 <a
                   className="event-card__link"
@@ -107,8 +208,29 @@ export default function Events({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Ver detalhes <span aria-hidden="true">-&gt;</span>
+                  Ver evento no site
                 </a>
+              )}
+              {localEvents.some((localEvent) => localEvent.id === event.id) && (
+                <button
+                  type="button"
+                  className="event-card__edit"
+                  aria-label={`Editar evento: ${event.title}`}
+                  title="Editar evento"
+                  onClick={() => openEditForm(event)}
+                >
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m16 4 4 4M4 20l4-.8L19.2 8a2.1 2.1 0 0 0-3-3L5 16.2 4 20Z" />
+                  </svg>
+                </button>
               )}
               {canDelete?.(event) && (
                 <button

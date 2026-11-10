@@ -43,21 +43,18 @@ export default function MyCalendar() {
           <br />e eventos sugeridos por nossos Integrantes
         </p>
         <a className="events-button" href="/eventos">
-          Eventos
+          <span aria-hidden="true">☷</span> Ver todos os eventos
         </a>
       </div>
 
       <div className="calendar-area">
-        <div className="calendar-actions">
-          {user?.tipo === "INTEGRANTE" && (
+        {user?.tipo === "INTEGRANTE" && (
+          <div className="calendar-actions">
             <a className="calendar-action" href="/eventos#novo">
               <span aria-hidden="true">+</span> Novo evento
             </a>
-          )}
-          <a className="calendar-action" href="/eventos">
-            <span aria-hidden="true">☷</span> Ver eventos
-          </a>
-        </div>
+          </div>
+        )}
         <div className="calendar-container">
           <Calendar
             locale="pt-BR"

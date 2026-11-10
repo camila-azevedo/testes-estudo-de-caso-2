@@ -76,6 +76,13 @@
   font-weight: 700;
 }
 
+.featured-event__countdown {
+  margin: 14px 0 0;
+  color: #f2c14e;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .featured-event__details span::before {
   content: "";
   display: inline-block;
@@ -141,7 +148,14 @@
   flex: 0 0 auto;
   border: 1px solid rgba(255, 255, 255, 0.35);
   position: relative;
-  transform: rotate(4deg);
+}
+
+.featured-event__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .featured-event__visual::before,
@@ -153,40 +167,55 @@
 
 .featured-event__visual::before {
   inset: 18px -18px -18px 18px;
+  transform: rotate(3deg);
 }
 
 .featured-event__visual::after {
   inset: 38px -38px -38px 38px;
   border-color: #f2c14e;
+  transform: rotate(-3deg);
 }
 
-.featured-event__number {
+.featured-event__date {
   position: absolute;
-  top: 38px;
-  left: 36px;
-  color: #f2c14e;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 9rem;
-  line-height: 1;
-}
-
-.featured-event__label {
-  position: absolute;
-  right: 32px;
-  bottom: 32px;
+  inset: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 18px;
+  padding: 32px;
   color: #ffffff;
-  font-size: 0.8rem;
-  letter-spacing: 0.18em;
+  box-sizing: border-box;
+}
+
+.featured-event__date-day {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(6rem, 10vw, 9rem);
+  line-height: 0.9;
+  color: #f2c14e;
+}
+
+.featured-event__date-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.featured-event__line {
-  position: absolute;
-  right: 34px;
-  bottom: 58px;
-  width: 92px;
-  height: 1px;
-  background: #ffffff;
+.featured-event__date-details span:last-child {
+  color: #f2c14e;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+}
+
+.featured-event__date-empty {
+  color: #f2c14e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3rem;
 }
 
 @media (max-width: 750px) {
@@ -199,5 +228,18 @@
   .featured-event__visual {
     width: min(75vw, 380px);
     align-self: center;
+  }
+
+  .featured-event__date {
+    gap: 12px;
+    padding: 24px;
+  }
+
+  .featured-event__date-day {
+    font-size: clamp(5.5rem, 26vw, 8rem);
+  }
+
+  .featured-event__date-details {
+    font-size: 0.75rem;
   }
 }

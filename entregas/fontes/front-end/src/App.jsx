@@ -14,6 +14,7 @@ import AcademicContent, {
 } from "./components/AcademicContent/AcademicContent";
 import { useApiList } from "./useApi";
 import { mapEvento, mapPost } from "./mappers";
+import { sortEventsByDate } from "./eventUtils";
 import { del, post, refresh } from "./api";
 import { useAuth } from "./authContext";
 
@@ -33,6 +34,24 @@ function EventsPage() {
   const { items: events, error, reload } = useApiList("/eventos", mapEvento);
   const { user } = useAuth();
   const isIntegrante = user?.tipo === "INTEGRANTE";
+  const [localEventsState] = useState(() => {
+    try {
+      const savedEvents = JSON.parse(
+        window.localStorage.getItem("local-events") || "[]",
+      );
+      return {
+        events: Array.isArray(savedEvents) ? savedEvents : [],
+        error: "",
+      };
+    } catch {
+      return {
+        events: [],
+        error: "Não foi possível carregar os eventos salvos neste navegador.",
+      };
+    }
+  });
+  const [localEvents, setLocalEvents] = useState(localEventsState.events);
+  const [localEventsError, setLocalEventsError] = useState(localEventsState.error);
   const [favoriteIds, setFavoriteIds] = useState(() => {
     try {
       const savedFavorites = JSON.parse(
@@ -61,16 +80,39 @@ function EventsPage() {
   const featuredEvents = events.filter(
     (event) => event.destaque || favoriteIds.includes(event.id),
   );
+  const allFeaturedEvents = sortEventsByDate([
+    ...localEvents.filter(
+      (event) => event.destaque || favoriteIds.includes(event.id),
+    ),
+    ...featuredEvents,
+  ]);
 
-  const createEvent = async (values) => {
-    await post("/eventos", {
-      nomeEvento: values.nomeEvento,
-      descricao: values.descricao,
-      dataEvento: values.dataEvento,
-      linkAcesso: values.linkAcesso || undefined,
-      destaque: values.destaque,
-    });
-    reload();
+  const createLocalEvent = (event) => {
+    const updatedEvents = [event, ...localEvents];
+    try {
+      window.localStorage.setItem("local-events", JSON.stringify(updatedEvents));
+    } catch {
+      throw new Error(
+        "Não foi possível salvar. Remova a imagem ou escolha uma imagem menor e tente novamente.",
+      );
+    }
+    setLocalEvents(updatedEvents);
+    setLocalEventsError("");
+  };
+
+  const updateLocalEvent = (event) => {
+    const updatedEvents = localEvents.map((localEvent) =>
+      localEvent.id === event.id ? event : localEvent,
+    );
+    try {
+      window.localStorage.setItem("local-events", JSON.stringify(updatedEvents));
+    } catch {
+      throw new Error(
+        "Não foi possível salvar. Remova a imagem ou escolha uma imagem menor e tente novamente.",
+      );
+    }
+    setLocalEvents(updatedEvents);
+    setLocalEventsError("");
   };
 
   // Só o autor ou um admin pode excluir (o back-end também confere).
@@ -91,14 +133,21 @@ function EventsPage() {
     <>
       <NavigationBar />
       <main>
-        <FeaturedEvents events={featuredEvents} />
-        {error && <p>Não foi possível carregar os eventos.</p>}
+        <FeaturedEvents events={allFeaturedEvents} />
+        {error && (
+          <p role="alert">
+            Não foi possível carregar os eventos da agenda online. Os eventos
+            cadastrados neste navegador continuam disponíveis.
+          </p>
+        )}
+        {localEventsError && <p role="alert">{localEventsError}</p>}
         <Events
           events={events}
+          localEvents={localEvents}
+          onCreate={createLocalEvent}
+          onUpdate={updateLocalEvent}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
-          canCreate={isIntegrante}
-          onCreate={createEvent}
           canDelete={canDeleteEvent}
           onDelete={deleteEvent}
         />

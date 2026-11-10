@@ -8,10 +8,20 @@ const dois = (n) => String(n).padStart(2, "0");
 export function mapEvento(e) {
   const d = new Date(e.dataEvento);
   const minutos = d.getMinutes();
+  const dateLong = Number.isNaN(d.getTime())
+    ? ""
+    : new Intl.DateTimeFormat("pt-BR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(d);
   return {
     id: String(e.id),
     date: `${dois(d.getDate())} ${MESES[d.getMonth()]}`,
+    dateLong,
+    year: Number.isNaN(d.getTime()) ? "" : d.getFullYear(),
     time: minutos ? `${d.getHours()}h${dois(minutos)}` : `${d.getHours()}h`,
+    dateTime: e.dataEvento,
     title: e.nomeEvento,
     description: e.descricao || "",
     type: e.destaque ? "Destaque" : "Evento",

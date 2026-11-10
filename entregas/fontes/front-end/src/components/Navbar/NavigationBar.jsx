@@ -83,6 +83,7 @@ const NavigationBar = () => {
                   Textos para Discussão
                 </a>
               </li>
+              {/* Abas temporariamente ocultas até o conteúdo estar disponível.
               <li>
                 <a href="/biblioteca-digital" onClick={closeMenu}>
                   Biblioteca Digital
@@ -93,6 +94,7 @@ const NavigationBar = () => {
                   Linhas de Pesquisa
                 </a>
               </li>
+              */}
             </ul>
           </li>
         </ul>
